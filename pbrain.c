@@ -29,13 +29,10 @@ void e(int i){
         CA(8) "can't open %s", f); break;
     }
     printf(".\n");
-    exit(i);
 }
 
-int main(int argc, char **argv){
-    const char *filename;
-
-    filename = "test.bf";
+static void init(const char *filename)
+{
     if(!(input = fopen(f=filename, "r"))) e(8);
     length = fread(code, 1, SIZE, input);
     fclose(input);
@@ -48,7 +45,10 @@ int main(int argc, char **argv){
     }
     if(sp) e(code[s[--sp]]=='['?4:6);
     for(q=0;q<=USHRT_MAX;q++) ptable[q]=-1;
-    for(q=0;q<length;q++){
+}
+
+static void step()
+{
         switch(code[q]){
             case '+': a[p]++; break;
             case '-': a[p]--; break;
@@ -62,6 +62,17 @@ int main(int argc, char **argv){
             case ')': q=s[--sp]; break;
             case ':': s[sp++]=q; if((q=ptable[a[p]])<0) e(2); break;
         }
+}
+
+int notmain(int argc, char **argv){
+    init("test.bf");
+    for(q=0;q<length;q++){
+        step();
     }
-    exit(0);
+    return 0;
+}
+
+int main(int argc, char *argv[])
+{
+    return notmain(argc, argv);
 }
