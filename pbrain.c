@@ -47,7 +47,7 @@ static void init(const char *filename)
     for(q=0;q<=USHRT_MAX;q++) ptable[q]=-1;
 }
 
-static void step()
+static int step()
 {
         switch(code[q]){
             case '+': a[p]++; break;
@@ -55,13 +55,15 @@ static void step()
             case '<': if(--p<0) e(3); break;
             case '>': if(++p>=SIZE) e(3); break;
             case ',': if((c=getchar())!=EOF) a[p]=c=='\n'?10:c; break;
-            case '.': putchar(a[p]==10?'\n':a[p]); break;
+            /* case '.': putchar(a[p]==10?'\n':a[p]); return 1; */
+            case '.': return 1;
             case '[': if(!a[p]) q=t[q]; break;
             case ']': if(a[p]) q=t[q]; break;
             case '(': ptable[a[p]]=q; q=t[q]; break;
             case ')': q=s[--sp]; break;
             case ':': s[sp++]=q; if((q=ptable[a[p]])<0) e(2); break;
         }
+        return 0;
 }
 
 int notmain(int argc, char **argv){
@@ -72,7 +74,19 @@ int notmain(int argc, char **argv){
     return 0;
 }
 
-int main(int argc, char *argv[])
+int spigot_init(const char *filename)
 {
-    return notmain(argc, argv);
+    init(filename);
+    q = 0;
+    return 0;
+}
+
+int spigot_step()
+{
+    int s = 0;
+    if(q < length) { 
+        s = step();
+        q++;
+    }
+    return s;
 }
