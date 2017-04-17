@@ -17,7 +17,6 @@ unsigned short a[SIZE];
 int s[SIZE], sp, ptable[USHRT_MAX+1], t[SIZE], p, q, length, c;
 char code[SIZE];
 const char *f;
-FILE *input;
 unsigned short in;
 
 void e(int i){
@@ -33,15 +32,20 @@ void e(int i){
     printf(".\n");
 }
 
-static void init(const char *filename)
+static void init(const char *str, int len)
 {
     memset(a, 0, sizeof(short) * SIZE);
     memset(s, 0, sizeof(int) * SIZE);
     memset(t, 0, sizeof(int) * SIZE);
     memset(code, 0, sizeof(char) * SIZE);
+    memset(ptable, 0, sizeof(int) * (USHRT_MAX + 1));
+    /*
     if(!(input = fopen(f=filename, "r"))) e(8);
     length = fread(code, 1, SIZE, input);
     fclose(input);
+    */
+    strncpy(code, str, len);
+    length = len;
     for(q=0;q<length;q++){
         switch(code[q]){
             case '(': case '[': s[sp++]=q ; break;
@@ -71,17 +75,9 @@ static int step()
         return -1;
 }
 
-int notmain(int argc, char **argv){
-    init("test.bf");
-    for(q=0;q<length;q++){
-        step();
-    }
-    return 0;
-}
-
-int spigot_init(const char *filename)
+int spigot_init(const char *str)
 {
-    init(filename);
+    init(str, strlen(str));
     q = 0;
     return 0;
 }
