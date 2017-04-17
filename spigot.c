@@ -9,6 +9,7 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
     const char *filename;
     SPFLOAT in;
     int tick;
+    SPFLOAT val;
     switch(pd->mode) {
         case PLUMBER_CREATE:
             if(sporth_check_args(stack, "fs") != SPORTH_OK) {
@@ -21,24 +22,28 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             *ud = foo;*/
             sporth_stack_pop_string(stack);
             sporth_stack_pop_float(stack);
+            sporth_stack_pop_float(stack);
             sporth_stack_push_float(stack, 0.0); 
             break;
         case PLUMBER_INIT:
             filename = sporth_stack_pop_string(stack);
-            spigot_init(filename);
             sporth_stack_pop_float(stack);
+            sporth_stack_pop_float(stack);
+            spigot_init(filename);
             sporth_stack_push_float(stack, 0.0);
             break;
 
         case PLUMBER_COMPUTE:
             in = sporth_stack_pop_float(stack);
+            val = sporth_stack_pop_float(stack);
+            spigot_constant(val);
             tick = 0;
             if(in != 0) {
                 tick = spigot_step();
             }
 
             if(tick) {
-                sporth_stack_push_float(stack, 1.0);
+                sporth_stack_push_float(stack, tick);
             } else {
                 sporth_stack_push_float(stack, 0.0);
             }

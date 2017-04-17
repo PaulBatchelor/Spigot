@@ -1,10 +1,12 @@
 OBJ=pbrain.o spigot.o
+CFLAGS += -fPIC -g -ansi
+LIBS += -lsporth -lsoundpipe -lm -lsndfile -ldl
+
 
 %.o: %.c
-	$(CC) -fPIC -c -g -ansi $< -o $@
+	$(CC) -c $(CFLAGS) $< -o $@
 
 spigot.so: $(OBJ)
-	$(CC) -fPIC -shared -o $@ $(OBJ) -lsporth -lsoundpipe -lm -lsndfile -ldl
-
+	$(CC) $(CFLAGS) -shared -o $@ $(OBJ) $(LIBS)
 clean:
 	rm -rf $(OBJ) spigot.so

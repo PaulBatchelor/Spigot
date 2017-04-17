@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <string.h>
 #define SIZE 65536
 #define CA(x) case x: fprintf(stderr, "Error: " 
 
@@ -17,6 +18,7 @@ int s[SIZE], sp, ptable[USHRT_MAX+1], t[SIZE], p, q, length, c;
 char code[SIZE];
 const char *f;
 FILE *input;
+unsigned short in;
 
 void e(int i){
     switch(i){
@@ -33,6 +35,10 @@ void e(int i){
 
 static void init(const char *filename)
 {
+    memset(a, 0, sizeof(short) * SIZE);
+    memset(s, 0, sizeof(int) * SIZE);
+    memset(t, 0, sizeof(int) * SIZE);
+    memset(code, 0, sizeof(char) * SIZE);
     if(!(input = fopen(f=filename, "r"))) e(8);
     length = fread(code, 1, SIZE, input);
     fclose(input);
@@ -50,20 +56,19 @@ static void init(const char *filename)
 static int step()
 {
         switch(code[q]){
-            case '+': a[p]++; break;
-            case '-': a[p]--; break;
-            case '<': if(--p<0) e(3); break;
-            case '>': if(++p>=SIZE) e(3); break;
-            case ',': if((c=getchar())!=EOF) a[p]=c=='\n'?10:c; break;
-            /* case '.': putchar(a[p]==10?'\n':a[p]); return 1; */
+            case '+': a[p]++; return 2;
+            case '-': a[p]--; return 3;
+            case '<': if(--p<0) e(3); return 4;
+            case '>': if(++p>=SIZE) e(3); return 5;
+            case ',': a[p]=in; return 0;
             case '.': return 1;
-            case '[': if(!a[p]) q=t[q]; break;
-            case ']': if(a[p]) q=t[q]; break;
+            case '[': if(!a[p]) q=t[q]; return 6;
+            case ']': if(a[p]) q=t[q]; return 7;
             case '(': ptable[a[p]]=q; q=t[q]; break;
             case ')': q=s[--sp]; break;
             case ':': s[sp++]=q; if((q=ptable[a[p]])<0) e(2); break;
         }
-        return 0;
+        return -1;
 }
 
 int notmain(int argc, char **argv){
@@ -83,10 +88,18 @@ int spigot_init(const char *filename)
 
 int spigot_step()
 {
-    int s = 0;
-    if(q < length) { 
+    int s = -1;
+
+        
+    while(s == -1) {
+        if(q >= length) return 0;
         s = step();
         q++;
     }
     return s;
+}
+
+int spigot_constant(unsigned short val)
+{
+    in = val;
 }
