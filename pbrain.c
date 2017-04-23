@@ -99,3 +99,8 @@ int spigot_constant(unsigned short val)
 {
     in = val;
 }
+
+char * spigot_get_code()
+{
+    return code;
+}
