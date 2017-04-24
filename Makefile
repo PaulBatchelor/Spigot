@@ -2,6 +2,9 @@ OBJ=pbrain.o spigot.o graphics.o
 CFLAGS += -fPIC -g -ansi -Wall
 LIBS += -lsporth -lsoundpipe -lm -lsndfile -ldl -lglfw -lGL
 
+CONFIG ?=
+
+include $(CONFIG)
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
