@@ -15,6 +15,7 @@
 
 unsigned short a[SIZE];
 int s[SIZE], sp, ptable[USHRT_MAX+1], t[SIZE], p, q, length, c;
+int curpos;
 char code[SIZE];
 const char *f;
 unsigned short in;
@@ -55,6 +56,8 @@ static void init(const char *str, int len)
     }
     if(sp) e(code[s[--sp]]=='['?4:6);
     for(q=0;q<=USHRT_MAX;q++) ptable[q]=-1;
+    curpos = 0;
+    q = 0;
 }
 
 static int step()
@@ -89,6 +92,7 @@ int spigot_step()
         
     while(s == -1) {
         if(q >= length) return 0;
+        curpos = q;
         s = step();
         q++;
     }
@@ -98,9 +102,20 @@ int spigot_step()
 int spigot_constant(unsigned short val)
 {
     in = val;
+    return 0;
 }
 
 char * spigot_get_code()
 {
     return code;
+}
+
+int spigot_get_length()
+{
+    return length;
+}
+
+int spigot_get_pos()
+{
+    return curpos;
 }

@@ -6,14 +6,14 @@ _val var
 _clk var
 _env var
 
-0.3 dmetro _clk set
+0.5 dmetro _clk set
 
-0 _clk get 
-2 _list sget
+2 _clk get 
+1 _list sget
 _spigot fe _val set
 
 _val get 0.001 0.01 0.1 tenvx _env set
-_env get _val get "val" print 
+_env get _val get 
 dup 0 ne samphold 
 _notes tget mtof 0.3 
 1 7 _env get 1 *  fm *

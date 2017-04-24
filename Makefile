@@ -1,6 +1,6 @@
-OBJ=pbrain.o spigot.o
-CFLAGS += -fPIC -g -ansi
-LIBS += -lsporth -lsoundpipe -lm -lsndfile -ldl
+OBJ=pbrain.o spigot.o graphics.o
+CFLAGS += -fPIC -g -ansi -Wall
+LIBS += -lsporth -lsoundpipe -lm -lsndfile -ldl -lglfw -lGL
 
 
 %.o: %.c
