@@ -54,8 +54,8 @@ static void draw()
     y = pos / 12;
     code = spigot_get_code();
     len = spigot_get_length();
-    clear_color_rgb(0x181818);
-    color_rgb(0xF5AA9D);
+    clear_color_rgb(0x000000);
+    color_rgb(0x84de02);
     glClear(GL_COLOR_BUFFER_BIT);
 
     glRasterPos2i(3, 11);
