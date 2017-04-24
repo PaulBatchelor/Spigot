@@ -6,10 +6,35 @@ _val var
 _clk var
 _env var
 
-0.5 dmetro _clk set
+0.3 dmetro
+
+_clk set
 
 2 _clk get 
-1 _list sget
+
+##############################################################################
+##: ## Insert your string here
+
+##: this line reads a line from the file "examples.txt"
+
+# 1 _list sget
+
+
+
+##: OR you could just provide a string here
+
+
+
+
+"+[>><<+.]"
+
+
+
+
+
+##############################################################################
+
+
 _spigot fe _val set
 
 _val get 0.001 0.01 0.1 tenvx _env set
