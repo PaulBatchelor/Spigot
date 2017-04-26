@@ -16,8 +16,6 @@
 #define SIZE 65536
 #define CA(x) case x: fprintf(stderr, "Error: " 
 
-const char *f;
-
 struct spigot_pbrain {
     unsigned short a[SIZE];
     int curpos;
@@ -30,21 +28,22 @@ struct spigot_pbrain {
     int length;
     char code[SIZE];
     unsigned short in;
+    const char *f;
 };
 
 static void e(spigot_pbrain *spb, int i){
     switch(i){
         CA(2) "call to undefined procedure (%hu)", spb->a[spb->p]); break;
         CA(3) "pointer too far %s", spb->p>0?"right":"left"); break;
-        CA(4) "unmatched '[' at byte %d of %s", spb->s[spb->sp], f); 
+        CA(4) "unmatched '[' at byte %d of %s", spb->s[spb->sp], spb->f); 
             break;
-        CA(5) "unmatched ']' at byte %d of %s", spb->q, f); 
+        CA(5) "unmatched ']' at byte %d of %s", spb->q, spb->f); 
             break;
-        CA(6) "unmatched '(' at byte %d of %s", spb->s[spb->sp], f); 
+        CA(6) "unmatched '(' at byte %d of %s", spb->s[spb->sp], spb->f); 
             break;
-        CA(7) "unmatched ')' at byte %d of %s", spb->q, f); 
+        CA(7) "unmatched ')' at byte %d of %s", spb->q, spb->f); 
             break;
-        CA(8) "can't open %s", f); 
+        CA(8) "can't open %s", spb->f); 
             break;
     }
     printf(".\n");
