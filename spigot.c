@@ -6,6 +6,7 @@
 
 typedef struct {
     spigot_graphics *gfx;
+    spigot_pbrain *pbrain;
     int load;
 } spigot_stuff;
 
@@ -28,6 +29,8 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             *ud = foo;*/
             stuff = malloc(sizeof(spigot_stuff));
             stuff->gfx = spigot_gfx_new();
+            stuff->pbrain = spigot_pbrain_new();
+            spigot_gfx_pbrain_set(stuff->gfx, stuff->pbrain);
             *ud = stuff;
 
             sporth_stack_pop_string(stack);
@@ -42,7 +45,7 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             stuff->load = sporth_stack_pop_float(stack);
             sporth_stack_pop_float(stack);
             sporth_stack_pop_float(stack);
-            spigot_init(filename);
+            spigot_init(stuff->pbrain, filename);
             if(stuff->load != 0) {
                 spigot_start(stuff->gfx);
             }
@@ -54,13 +57,13 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             sporth_stack_pop_float(stack);
             in = sporth_stack_pop_float(stack);
             val = sporth_stack_pop_float(stack);
-            spigot_constant(val);
+            spigot_constant(stuff->pbrain, val);
             tick = 0;
             if(in != 0) {
                 if(stuff->load != 0) {
                 spigot_gfx_step(stuff->gfx);
                 }
-                tick = spigot_step();
+                tick = spigot_step(stuff->pbrain);
             }
 
             if(tick) {
@@ -77,6 +80,7 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
                 spigot_stop(stuff->gfx);
             }
             spigot_gfx_free(stuff->gfx);
+            spigot_pbrain_free(stuff->pbrain);
             free(stuff);
             break;
     }

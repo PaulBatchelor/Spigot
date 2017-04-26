@@ -10,6 +10,9 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "spigot.h"
+
 #define SIZE 65536
 #define CA(x) case x: fprintf(stderr, "Error: " 
 
@@ -19,6 +22,10 @@ int curpos;
 char code[SIZE];
 const char *f;
 unsigned short in;
+
+struct spigot_pbrain {
+
+};
 
 void e(int i){
     switch(i){
@@ -78,14 +85,14 @@ static int step()
         return -1;
 }
 
-int spigot_init(const char *str)
+int spigot_init(spigot_pbrain *spb, const char *str)
 {
     init(str, strlen(str));
     q = 0;
     return 0;
 }
 
-int spigot_step()
+int spigot_step(spigot_pbrain *spb)
 {
     int s = -1;
 
@@ -99,23 +106,33 @@ int spigot_step()
     return s;
 }
 
-int spigot_constant(unsigned short val)
+int spigot_constant(spigot_pbrain *spb, unsigned short val)
 {
     in = val;
     return 0;
 }
 
-char * spigot_get_code()
+char * spigot_get_code(spigot_pbrain *spb)
 {
     return code;
 }
 
-int spigot_get_length()
+int spigot_get_length(spigot_pbrain *spb)
 {
     return length;
 }
 
-int spigot_get_pos()
+int spigot_get_pos(spigot_pbrain *spb)
 {
     return curpos;
+}
+
+spigot_pbrain * spigot_pbrain_new()
+{
+    return malloc(sizeof(spigot_pbrain));
+}
+
+void spigot_pbrain_free(spigot_pbrain *spb)
+{
+    free(spb);
 }

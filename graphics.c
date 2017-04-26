@@ -17,6 +17,7 @@ struct spigot_graphics {
     pthread_t thread;
     GLFWwindow *window;
     int please_draw;
+    spigot_pbrain *pbrain;
 };
 
 static void clear_color_rgb(uint32_t rgb)
@@ -37,7 +38,7 @@ static void color_rgb(uint32_t rgb)
     glColor3f(r / 255.0, g / 255.0, b / 255.0);
 }
 
-static void draw()
+static void draw(spigot_pbrain *spb)
 {
     const char *code;
     int len, s;
@@ -48,12 +49,12 @@ static void draw()
     int yoff;
     int cnt;
 
-    pos = spigot_get_pos();
+    pos = spigot_get_pos(spb);
 
     x = pos % 12; 
     y = pos / 12;
-    code = spigot_get_code();
-    len = spigot_get_length();
+    code = spigot_get_code(spb);
+    len = spigot_get_length(spb);
     clear_color_rgb(0x000000);
     color_rgb(0x84de02);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -167,7 +168,7 @@ static void * run_loop(void *ud)
 
         if(spgt->please_draw) {
             spgt->please_draw = 0;
-            draw();
+            draw(spgt->pbrain);
             glfwSwapBuffers(spgt->window);
         }
         usleep(8000);
@@ -206,4 +207,9 @@ void spigot_gfx_free(spigot_graphics *gfx)
 void spigot_gfx_step(spigot_graphics *gfx)
 {
     gfx->please_draw = 1;
+}
+
+void spigot_gfx_pbrain_set(spigot_graphics *gfx, spigot_pbrain *spb)
+{
+    gfx->pbrain = spb;
 }
