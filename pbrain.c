@@ -165,3 +165,17 @@ void spigot_toggle_playback(spigot_pbrain *spb)
         spb->play = 1;
     }
 }
+
+void spigot_move_left(spigot_pbrain *spb)
+{
+    if(spb->q != 0) {
+        spb->q--;
+        spb->curpos = spb->q;
+    } 
+}
+
+void spigot_move_right(spigot_pbrain *spb)
+{
+    spb->q++;
+    spb->curpos = spb->q;
+}

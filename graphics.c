@@ -131,6 +131,14 @@ static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
             case GLFW_KEY_SPACE:
                 spigot_toggle_playback(gfx->pbrain);
                 break;
+            case GLFW_KEY_H:
+                spigot_move_left(gfx->pbrain);
+                gfx->please_draw = 1;
+                break;
+            case GLFW_KEY_L:
+                spigot_move_right(gfx->pbrain);
+                gfx->please_draw = 1;
+                break;
             default:
                 break;
         }
