@@ -27,7 +27,7 @@ struct spigot_pbrain {
 
 };
 
-static void e(int i){
+static void e(spigot_pbrain *spb, int i){
     switch(i){
         CA(2) "call to undefined procedure (%hu)", a[p]); break;
         CA(3) "pointer too far %s", p>0?"right":"left"); break;
@@ -57,11 +57,11 @@ static void init(spigot_pbrain *spb, const char *str, int len)
     for(q=0;q<length;q++){
         switch(code[q]){
             case '(': case '[': s[sp++]=q ; break;
-            case ')': if(!sp--||code[s[sp]]!='(') e(7); t[s[sp]]=q; break;
-            case ']': if(!sp--||code[t[t[s[sp]]=q]=s[sp]]!='[') e(5); break;
+            case ')': if(!sp--||code[s[sp]]!='(') e(spb, 7); t[s[sp]]=q; break;
+            case ']': if(!sp--||code[t[t[s[sp]]=q]=s[sp]]!='[') e(spb, 5); break;
         }
     }
-    if(sp) e(code[s[--sp]]=='['?4:6);
+    if(sp) e(spb, code[s[--sp]]=='['?4:6);
     for(q=0;q<=USHRT_MAX;q++) ptable[q]=-1;
     curpos = 0;
     q = 0;
@@ -72,15 +72,15 @@ static int step(spigot_pbrain *spb)
         switch(code[q]){
             case '+': a[p]++; return 2;
             case '-': a[p]--; return 3;
-            case '<': if(--p<0) e(3); return 4;
-            case '>': if(++p>=SIZE) e(3); return 5;
+            case '<': if(--p<0) e(spb, 3); return 4;
+            case '>': if(++p>=SIZE) e(spb, 3); return 5;
             case ',': a[p]=in; return 0;
             case '.': return 1;
             case '[': if(!a[p]) q=t[q]; return 6;
             case ']': if(a[p]) q=t[q]; return 7;
             case '(': ptable[a[p]]=q; q=t[q]; break;
             case ')': q=s[--sp]; break;
-            case ':': s[sp++]=q; if((q=ptable[a[p]])<0) e(2); break;
+            case ':': s[sp++]=q; if((q=ptable[a[p]])<0) e(spb, 2); break;
         }
         return -1;
 }
