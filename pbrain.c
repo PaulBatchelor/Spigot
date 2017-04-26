@@ -16,9 +16,7 @@
 #define SIZE 65536
 #define CA(x) case x: fprintf(stderr, "Error: " 
 
-char code[SIZE];
 const char *f;
-unsigned short in;
 
 struct spigot_pbrain {
     unsigned short a[SIZE];
@@ -30,6 +28,8 @@ struct spigot_pbrain {
     int p;
     int q;
     int length;
+    char code[SIZE];
+    unsigned short in;
 };
 
 static void e(spigot_pbrain *spb, int i){
@@ -55,29 +55,29 @@ static void init(spigot_pbrain *spb, const char *str, int len)
     memset(spb->a, 0, sizeof(short) * SIZE);
     memset(spb->s, 0, sizeof(int) * SIZE);
     memset(spb->t, 0, sizeof(int) * SIZE);
-    memset(code, 0, sizeof(char) * SIZE);
+    memset(spb->code, 0, sizeof(char) * SIZE);
     memset(spb->ptable, 0, sizeof(int) * (USHRT_MAX + 1));
     /*
     if(!(input = fopen(f=filename, "r"))) e(8);
     length = fread(code, 1, SIZE, input);
     fclose(input);
     */
-    strncpy(code, str, len);
+    strncpy(spb->code, str, len);
     spb->length = len;
     for(spb->q=0;spb->q<spb->length;spb->q++){
-        switch(code[spb->q]){
+        switch(spb->code[spb->q]){
             case '(': case '[': spb->s[spb->sp++]=spb->q ; break;
-            case ')': if(!spb->sp--||code[spb->s[spb->sp]]!='(') e(spb, 7); 
+            case ')': if(!spb->sp--||spb->code[spb->s[spb->sp]]!='(') e(spb, 7); 
                 spb->t[spb->s[spb->sp]]=spb->q; 
                 break;
             case ']': 
                 if(!spb->sp--||
-                    code[spb->t[spb->t[spb->s[spb->sp]]=spb->q]=spb->s[spb->sp]]!='[') 
+                    spb->code[spb->t[spb->t[spb->s[spb->sp]]=spb->q]=spb->s[spb->sp]]!='[') 
                     e(spb, 5); 
                 break;
         }
     }
-    if(spb->sp) e(spb, code[spb->s[--spb->sp]]=='['?4:6);
+    if(spb->sp) e(spb, spb->code[spb->s[--spb->sp]]=='['?4:6);
     for(spb->q=0;spb->q<=USHRT_MAX;spb->q++) spb->ptable[spb->q]=-1;
     spb->curpos = 0;
     spb->q = 0;
@@ -85,12 +85,12 @@ static void init(spigot_pbrain *spb, const char *str, int len)
 
 static int step(spigot_pbrain *spb)
 {
-        switch(code[spb->q]){
+        switch(spb->code[spb->q]){
             case '+': spb->a[spb->p]++; return 2;
             case '-': spb->a[spb->p]--; return 3;
             case '<': if(--spb->p<0) e(spb, 3); return 4;
             case '>': if(++spb->p>=SIZE) e(spb, 3); return 5;
-            case ',': spb->a[spb->p]=in; return 0;
+            case ',': spb->a[spb->p]=spb->in; return 0;
             case '.': return 1;
             case '[': if(!spb->a[spb->p]) spb->q=spb->t[spb->q]; return 6;
             case ']': if(spb->a[spb->p]) spb->q=spb->t[spb->q]; return 7;
@@ -125,13 +125,13 @@ int spigot_step(spigot_pbrain *spb)
 
 int spigot_constant(spigot_pbrain *spb, unsigned short val)
 {
-    in = val;
+    spb->in = val;
     return 0;
 }
 
 char * spigot_get_code(spigot_pbrain *spb)
 {
-    return code;
+    return spb->code;
 }
 
 int spigot_get_length(spigot_pbrain *spb)
