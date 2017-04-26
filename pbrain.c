@@ -17,13 +17,13 @@
 #define CA(x) case x: fprintf(stderr, "Error: " 
 
 int s[SIZE], sp, ptable[USHRT_MAX+1], t[SIZE], p, q, length, c;
-int curpos;
 char code[SIZE];
 const char *f;
 unsigned short in;
 
 struct spigot_pbrain {
     unsigned short a[SIZE];
+    int curpos;
 };
 
 static void e(spigot_pbrain *spb, int i){
@@ -62,7 +62,7 @@ static void init(spigot_pbrain *spb, const char *str, int len)
     }
     if(sp) e(spb, code[s[--sp]]=='['?4:6);
     for(q=0;q<=USHRT_MAX;q++) ptable[q]=-1;
-    curpos = 0;
+    spb->curpos = 0;
     q = 0;
 }
 
@@ -98,7 +98,7 @@ int spigot_step(spigot_pbrain *spb)
         
     while(s == -1) {
         if(q >= length) return 0;
-        curpos = q;
+        spb->curpos = q;
         s = step(spb);
         q++;
     }
@@ -123,7 +123,7 @@ int spigot_get_length(spigot_pbrain *spb)
 
 int spigot_get_pos(spigot_pbrain *spb)
 {
-    return curpos;
+    return spb->curpos;
 }
 
 spigot_pbrain * spigot_pbrain_new()
