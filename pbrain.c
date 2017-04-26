@@ -67,7 +67,7 @@ static void init(spigot_pbrain *spb, const char *str, int len)
     q = 0;
 }
 
-static int step()
+static int step(spigot_pbrain *spb)
 {
         switch(code[q]){
             case '+': a[p]++; return 2;
@@ -100,7 +100,7 @@ int spigot_step(spigot_pbrain *spb)
     while(s == -1) {
         if(q >= length) return 0;
         curpos = q;
-        s = step();
+        s = step(spb);
         q++;
     }
     return s;
