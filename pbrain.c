@@ -16,7 +16,6 @@
 #define SIZE 65536
 #define CA(x) case x: fprintf(stderr, "Error: " 
 
-int c;
 char code[SIZE];
 const char *f;
 unsigned short in;
