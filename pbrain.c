@@ -16,7 +16,7 @@
 #define SIZE 65536
 #define CA(x) case x: fprintf(stderr, "Error: " 
 
-int length, c;
+int c;
 char code[SIZE];
 const char *f;
 unsigned short in;
@@ -30,6 +30,7 @@ struct spigot_pbrain {
     int t[SIZE];
     int p;
     int q;
+    int length;
 };
 
 static void e(spigot_pbrain *spb, int i){
@@ -63,8 +64,8 @@ static void init(spigot_pbrain *spb, const char *str, int len)
     fclose(input);
     */
     strncpy(code, str, len);
-    length = len;
-    for(spb->q=0;spb->q<length;spb->q++){
+    spb->length = len;
+    for(spb->q=0;spb->q<spb->length;spb->q++){
         switch(code[spb->q]){
             case '(': case '[': spb->s[spb->sp++]=spb->q ; break;
             case ')': if(!spb->sp--||code[spb->s[spb->sp]]!='(') e(spb, 7); 
@@ -115,7 +116,7 @@ int spigot_step(spigot_pbrain *spb)
     int s = -1;
 
     while(s == -1) {
-        if(spb->q >= length) return 0;
+        if(spb->q >= spb->length) return 0;
         spb->curpos = spb->q;
         s = step(spb);
         spb->q++;
@@ -136,7 +137,7 @@ char * spigot_get_code(spigot_pbrain *spb)
 
 int spigot_get_length(spigot_pbrain *spb)
 {
-    return length;
+    return spb->length;
 }
 
 int spigot_get_pos(spigot_pbrain *spb)
