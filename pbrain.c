@@ -27,7 +27,7 @@ struct spigot_pbrain {
 
 };
 
-void e(int i){
+static void e(int i){
     switch(i){
         CA(2) "call to undefined procedure (%hu)", a[p]); break;
         CA(3) "pointer too far %s", p>0?"right":"left"); break;
@@ -40,7 +40,7 @@ void e(int i){
     printf(".\n");
 }
 
-static void init(const char *str, int len)
+static void init(spigot_pbrain *spb, const char *str, int len)
 {
     memset(a, 0, sizeof(short) * SIZE);
     memset(s, 0, sizeof(int) * SIZE);
@@ -87,7 +87,7 @@ static int step()
 
 int spigot_init(spigot_pbrain *spb, const char *str)
 {
-    init(str, strlen(str));
+    init(spb, str, strlen(str));
     q = 0;
     return 0;
 }
