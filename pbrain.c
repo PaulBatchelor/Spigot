@@ -16,7 +16,7 @@
 #define SIZE 65536
 #define CA(x) case x: fprintf(stderr, "Error: " 
 
-int t[SIZE], p, q, length, c;
+int p, q, length, c;
 char code[SIZE];
 const char *f;
 unsigned short in;
@@ -27,6 +27,7 @@ struct spigot_pbrain {
     int s[SIZE];
     int sp;
     int ptable[USHRT_MAX+1];
+    int t[SIZE];
 };
 
 static void e(spigot_pbrain *spb, int i){
@@ -51,7 +52,7 @@ static void init(spigot_pbrain *spb, const char *str, int len)
 {
     memset(spb->a, 0, sizeof(short) * SIZE);
     memset(spb->s, 0, sizeof(int) * SIZE);
-    memset(t, 0, sizeof(int) * SIZE);
+    memset(spb->t, 0, sizeof(int) * SIZE);
     memset(code, 0, sizeof(char) * SIZE);
     memset(spb->ptable, 0, sizeof(int) * (USHRT_MAX + 1));
     /*
@@ -65,10 +66,11 @@ static void init(spigot_pbrain *spb, const char *str, int len)
         switch(code[q]){
             case '(': case '[': spb->s[spb->sp++]=q ; break;
             case ')': if(!spb->sp--||code[spb->s[spb->sp]]!='(') e(spb, 7); 
-                t[spb->s[spb->sp]]=q; 
+                spb->t[spb->s[spb->sp]]=q; 
                 break;
             case ']': 
-                if(!spb->sp--||code[t[t[spb->s[spb->sp]]=q]=spb->s[spb->sp]]!='[') 
+                if(!spb->sp--||
+                    code[spb->t[spb->t[spb->s[spb->sp]]=q]=spb->s[spb->sp]]!='[') 
                     e(spb, 5); 
                 break;
         }
@@ -88,9 +90,9 @@ static int step(spigot_pbrain *spb)
             case '>': if(++p>=SIZE) e(spb, 3); return 5;
             case ',': spb->a[p]=in; return 0;
             case '.': return 1;
-            case '[': if(!spb->a[p]) q=t[q]; return 6;
-            case ']': if(spb->a[p]) q=t[q]; return 7;
-            case '(': spb->ptable[spb->a[p]]=q; q=t[q]; break;
+            case '[': if(!spb->a[p]) q=spb->t[q]; return 6;
+            case ']': if(spb->a[p]) q=spb->t[q]; return 7;
+            case '(': spb->ptable[spb->a[p]]=q; q=spb->t[q]; break;
             case ')': q=spb->s[--spb->sp]; break;
             case ':': spb->s[spb->sp++]=q; 
               if((q=spb->ptable[spb->a[p]])<0) e(spb, 2); 
