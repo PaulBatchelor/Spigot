@@ -16,7 +16,7 @@
 #define SIZE 65536
 #define CA(x) case x: fprintf(stderr, "Error: " 
 
-int ptable[USHRT_MAX+1], t[SIZE], p, q, length, c;
+int t[SIZE], p, q, length, c;
 char code[SIZE];
 const char *f;
 unsigned short in;
@@ -26,6 +26,7 @@ struct spigot_pbrain {
     int curpos;
     int s[SIZE];
     int sp;
+    int ptable[USHRT_MAX+1];
 };
 
 static void e(spigot_pbrain *spb, int i){
@@ -52,7 +53,7 @@ static void init(spigot_pbrain *spb, const char *str, int len)
     memset(spb->s, 0, sizeof(int) * SIZE);
     memset(t, 0, sizeof(int) * SIZE);
     memset(code, 0, sizeof(char) * SIZE);
-    memset(ptable, 0, sizeof(int) * (USHRT_MAX + 1));
+    memset(spb->ptable, 0, sizeof(int) * (USHRT_MAX + 1));
     /*
     if(!(input = fopen(f=filename, "r"))) e(8);
     length = fread(code, 1, SIZE, input);
@@ -73,7 +74,7 @@ static void init(spigot_pbrain *spb, const char *str, int len)
         }
     }
     if(spb->sp) e(spb, code[spb->s[--spb->sp]]=='['?4:6);
-    for(q=0;q<=USHRT_MAX;q++) ptable[q]=-1;
+    for(q=0;q<=USHRT_MAX;q++) spb->ptable[q]=-1;
     spb->curpos = 0;
     q = 0;
 }
@@ -89,10 +90,10 @@ static int step(spigot_pbrain *spb)
             case '.': return 1;
             case '[': if(!spb->a[p]) q=t[q]; return 6;
             case ']': if(spb->a[p]) q=t[q]; return 7;
-            case '(': ptable[spb->a[p]]=q; q=t[q]; break;
+            case '(': spb->ptable[spb->a[p]]=q; q=t[q]; break;
             case ')': q=spb->s[--spb->sp]; break;
             case ':': spb->s[spb->sp++]=q; 
-              if((q=ptable[spb->a[p]])<0) e(spb, 2); 
+              if((q=spb->ptable[spb->a[p]])<0) e(spb, 2); 
               break;
         }
         return -1;
