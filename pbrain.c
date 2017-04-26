@@ -16,7 +16,7 @@
 #define SIZE 65536
 #define CA(x) case x: fprintf(stderr, "Error: " 
 
-int q, length, c;
+int length, c;
 char code[SIZE];
 const char *f;
 unsigned short in;
@@ -29,6 +29,7 @@ struct spigot_pbrain {
     int ptable[USHRT_MAX+1];
     int t[SIZE];
     int p;
+    int q;
 };
 
 static void e(spigot_pbrain *spb, int i){
@@ -37,11 +38,11 @@ static void e(spigot_pbrain *spb, int i){
         CA(3) "pointer too far %s", spb->p>0?"right":"left"); break;
         CA(4) "unmatched '[' at byte %d of %s", spb->s[spb->sp], f); 
             break;
-        CA(5) "unmatched ']' at byte %d of %s", q, f); 
+        CA(5) "unmatched ']' at byte %d of %s", spb->q, f); 
             break;
         CA(6) "unmatched '(' at byte %d of %s", spb->s[spb->sp], f); 
             break;
-        CA(7) "unmatched ')' at byte %d of %s", q, f); 
+        CA(7) "unmatched ')' at byte %d of %s", spb->q, f); 
             break;
         CA(8) "can't open %s", f); 
             break;
@@ -63,40 +64,40 @@ static void init(spigot_pbrain *spb, const char *str, int len)
     */
     strncpy(code, str, len);
     length = len;
-    for(q=0;q<length;q++){
-        switch(code[q]){
-            case '(': case '[': spb->s[spb->sp++]=q ; break;
+    for(spb->q=0;spb->q<length;spb->q++){
+        switch(code[spb->q]){
+            case '(': case '[': spb->s[spb->sp++]=spb->q ; break;
             case ')': if(!spb->sp--||code[spb->s[spb->sp]]!='(') e(spb, 7); 
-                spb->t[spb->s[spb->sp]]=q; 
+                spb->t[spb->s[spb->sp]]=spb->q; 
                 break;
             case ']': 
                 if(!spb->sp--||
-                    code[spb->t[spb->t[spb->s[spb->sp]]=q]=spb->s[spb->sp]]!='[') 
+                    code[spb->t[spb->t[spb->s[spb->sp]]=spb->q]=spb->s[spb->sp]]!='[') 
                     e(spb, 5); 
                 break;
         }
     }
     if(spb->sp) e(spb, code[spb->s[--spb->sp]]=='['?4:6);
-    for(q=0;q<=USHRT_MAX;q++) spb->ptable[q]=-1;
+    for(spb->q=0;spb->q<=USHRT_MAX;spb->q++) spb->ptable[spb->q]=-1;
     spb->curpos = 0;
-    q = 0;
+    spb->q = 0;
 }
 
 static int step(spigot_pbrain *spb)
 {
-        switch(code[q]){
+        switch(code[spb->q]){
             case '+': spb->a[spb->p]++; return 2;
             case '-': spb->a[spb->p]--; return 3;
             case '<': if(--spb->p<0) e(spb, 3); return 4;
             case '>': if(++spb->p>=SIZE) e(spb, 3); return 5;
             case ',': spb->a[spb->p]=in; return 0;
             case '.': return 1;
-            case '[': if(!spb->a[spb->p]) q=spb->t[q]; return 6;
-            case ']': if(spb->a[spb->p]) q=spb->t[q]; return 7;
-            case '(': spb->ptable[spb->a[spb->p]]=q; q=spb->t[q]; break;
-            case ')': q=spb->s[--spb->sp]; break;
-            case ':': spb->s[spb->sp++]=q; 
-              if((q=spb->ptable[spb->a[spb->p]])<0) e(spb, 2); 
+            case '[': if(!spb->a[spb->p]) spb->q=spb->t[spb->q]; return 6;
+            case ']': if(spb->a[spb->p]) spb->q=spb->t[spb->q]; return 7;
+            case '(': spb->ptable[spb->a[spb->p]]=spb->q; spb->q=spb->t[spb->q]; break;
+            case ')': spb->q=spb->s[--spb->sp]; break;
+            case ':': spb->s[spb->sp++]=spb->q; 
+              if((spb->q=spb->ptable[spb->a[spb->p]])<0) e(spb, 2); 
               break;
         }
         return -1;
@@ -105,7 +106,7 @@ static int step(spigot_pbrain *spb)
 int spigot_init(spigot_pbrain *spb, const char *str)
 {
     init(spb, str, strlen(str));
-    q = 0;
+    spb->q = 0;
     return 0;
 }
 
@@ -113,12 +114,11 @@ int spigot_step(spigot_pbrain *spb)
 {
     int s = -1;
 
-        
     while(s == -1) {
-        if(q >= length) return 0;
-        spb->curpos = q;
+        if(spb->q >= length) return 0;
+        spb->curpos = spb->q;
         s = step(spb);
-        q++;
+        spb->q++;
     }
     return s;
 }
