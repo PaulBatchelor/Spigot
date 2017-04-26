@@ -16,7 +16,6 @@
 #define SIZE 65536
 #define CA(x) case x: fprintf(stderr, "Error: " 
 
-unsigned short a[SIZE];
 int s[SIZE], sp, ptable[USHRT_MAX+1], t[SIZE], p, q, length, c;
 int curpos;
 char code[SIZE];
@@ -24,12 +23,12 @@ const char *f;
 unsigned short in;
 
 struct spigot_pbrain {
-
+    unsigned short a[SIZE];
 };
 
 static void e(spigot_pbrain *spb, int i){
     switch(i){
-        CA(2) "call to undefined procedure (%hu)", a[p]); break;
+        CA(2) "call to undefined procedure (%hu)", spb->a[p]); break;
         CA(3) "pointer too far %s", p>0?"right":"left"); break;
         CA(4) "unmatched '[' at byte %d of %s", s[sp], f); break;
         CA(5) "unmatched ']' at byte %d of %s", q, f); break;
@@ -42,7 +41,7 @@ static void e(spigot_pbrain *spb, int i){
 
 static void init(spigot_pbrain *spb, const char *str, int len)
 {
-    memset(a, 0, sizeof(short) * SIZE);
+    memset(spb->a, 0, sizeof(short) * SIZE);
     memset(s, 0, sizeof(int) * SIZE);
     memset(t, 0, sizeof(int) * SIZE);
     memset(code, 0, sizeof(char) * SIZE);
@@ -70,17 +69,17 @@ static void init(spigot_pbrain *spb, const char *str, int len)
 static int step(spigot_pbrain *spb)
 {
         switch(code[q]){
-            case '+': a[p]++; return 2;
-            case '-': a[p]--; return 3;
+            case '+': spb->a[p]++; return 2;
+            case '-': spb->a[p]--; return 3;
             case '<': if(--p<0) e(spb, 3); return 4;
             case '>': if(++p>=SIZE) e(spb, 3); return 5;
-            case ',': a[p]=in; return 0;
+            case ',': spb->a[p]=in; return 0;
             case '.': return 1;
-            case '[': if(!a[p]) q=t[q]; return 6;
-            case ']': if(a[p]) q=t[q]; return 7;
-            case '(': ptable[a[p]]=q; q=t[q]; break;
+            case '[': if(!spb->a[p]) q=t[q]; return 6;
+            case ']': if(spb->a[p]) q=t[q]; return 7;
+            case '(': ptable[spb->a[p]]=q; q=t[q]; break;
             case ')': q=s[--sp]; break;
-            case ':': s[sp++]=q; if((q=ptable[a[p]])<0) e(spb, 2); break;
+            case ':': s[sp++]=q; if((q=ptable[spb->a[p]])<0) e(spb, 2); break;
         }
         return -1;
 }
