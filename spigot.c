@@ -66,7 +66,7 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
                 tick = spigot_step(stuff->pbrain);
             }
 
-            if(tick) {
+            if(tick > 0) {
                 sporth_stack_push_float(stack, tick);
             } else {
                 sporth_stack_push_float(stack, 0.0);

@@ -124,7 +124,17 @@ static void errorcb(int error, const char* desc)
 
 static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    
+    spigot_graphics *gfx = glfwGetWindowUserPointer(window);
+
+    if(action == GLFW_PRESS || action == GLFW_REPEAT) {
+        switch(key) {
+            case GLFW_KEY_SPACE:
+                spigot_toggle_playback(gfx->pbrain);
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 static void * run_loop(void *ud)

@@ -19,6 +19,7 @@ void spigot_pbrain_free(spigot_pbrain *spb);
 spigot_graphics * spigot_gfx_new();
 void spigot_start(spigot_graphics *spgt);
 void spigot_stop(spigot_graphics *spgt);
+void spigot_toggle_playback(spigot_pbrain *spb);
 
 void spigot_gfx_free(spigot_graphics *gfx);
 

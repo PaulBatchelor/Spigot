@@ -29,6 +29,7 @@ struct spigot_pbrain {
     char code[SIZE];
     unsigned short in;
     const char *f;
+    int play;
 };
 
 static void e(spigot_pbrain *spb, int i){
@@ -80,6 +81,7 @@ static void init(spigot_pbrain *spb, const char *str, int len)
     for(spb->q=0;spb->q<=USHRT_MAX;spb->q++) spb->ptable[spb->q]=-1;
     spb->curpos = 0;
     spb->q = 0;
+    spb->play = 1;
 }
 
 static int step(spigot_pbrain *spb)
@@ -112,6 +114,8 @@ int spigot_init(spigot_pbrain *spb, const char *str)
 int spigot_step(spigot_pbrain *spb)
 {
     int s = -1;
+
+    if(spb->play == 0) return s;
 
     while(s == -1) {
         if(spb->q >= spb->length) return 0;
@@ -151,4 +155,13 @@ spigot_pbrain * spigot_pbrain_new()
 void spigot_pbrain_free(spigot_pbrain *spb)
 {
     free(spb);
+}
+
+void spigot_toggle_playback(spigot_pbrain *spb)
+{
+    if(spb->play) {
+        spb->play = 0;
+    } else {
+        spb->play = 1;
+    }
 }
