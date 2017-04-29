@@ -47,6 +47,7 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             sporth_stack_pop_float(stack);
             spigot_init(stuff->pbrain, filename);
             if(stuff->load != 0) {
+                spigot_gfx_init(stuff->gfx);
                 spigot_start(stuff->gfx);
             }
             sporth_stack_push_float(stack, 0.0);

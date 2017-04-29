@@ -13,6 +13,7 @@
 #include "bitmaps.h"
 
 #define WIDTH 193
+#define ZOOM 4
 
 typedef struct {
     char r, g, b;
@@ -52,24 +53,88 @@ static void spigot_draw_bitmap(spigot_graphics *gfx, spigot_color *clr,
     unsigned char byte;
     int pos;
     int xp;
+    int base;
 
-    x_bytes = ((w - 1) >> 3)  + 1;
+    x_bytes = ((w - 1) >> 3) + 1;
 
-    y_pos = 0;
+    base = y_pos * WIDTH * 3 + x_pos * 3;
     for(y = 0; y < h; y++) {
+        xp = 0;
         for(x = 0; x < x_bytes; x++) {
             byte = glyph[y * x_bytes + x];
-            x_pos = 0;
-            pos = y * WIDTH * 3 + x_pos * 3;
-            for(c = 0; c < 8 || xp < w; c++) {
-                if(byte & 1 << c) {
-                    
-                }
-                x_pos++;
+            for(c = 7; c >= 0 || xp < w; c--) {
+                pos = base + y * WIDTH * 3 + xp * 3;
+                if(byte & (1 << c)) {
+                   gfx->buf[pos] = clr->r; 
+                   gfx->buf[pos + 1] = clr->g; 
+                   gfx->buf[pos + 2] = clr->b; 
+                } 
+                xp++;
             }
         }
     }
 
+}
+
+static void parse_code(spigot_graphics *gfx)
+{
+    const char *code;
+    spigot_pbrain *spb;
+    spigot_color clr;
+    int x_pos, y_pos;
+    int len;
+    int s;
+    int off;
+
+    spb = gfx->pbrain;
+    len = spigot_get_length(spb);
+    code = spigot_get_code(spb);
+
+    x_pos= 0;
+    y_pos = 0;
+    s = 0;
+    off = 0;
+
+    color_rgb(&clr, 0x84de02);
+    while(s < len) {
+        switch(code[s]) {
+            case '+':
+                off = 0;
+                break;
+            case '-':
+                off = 5;
+                break;
+            case '<':
+                off = 10;
+                break;
+            case '>':
+                off = 15;
+                break;
+            case '.':
+                off = 20;
+                break;
+            case ',':
+                off = 25;
+                break;
+            case '[':
+                off = 30;
+                break;
+            case ']':
+                off = 35;
+                break;
+            default:
+                off = 40;
+                break;
+        }
+        spigot_draw_bitmap(gfx, &clr, x_pos * 16, y_pos * 16, 5, 5, spigot_bitmaps + off);
+        x_pos++;
+
+        if(x_pos > 11) {
+            x_pos = 0;
+            y_pos++;
+        }
+        s++;
+    }
 }
 
 /* static void draw(spigot_pbrain *spb) */
@@ -150,7 +215,7 @@ static void draw(spigot_graphics *gfx)
     glClear(GL_COLOR_BUFFER_BIT);
     /* glRasterPos2i(193, 193 * 4); */
     glRasterPos2i(0, 0);
-    glPixelZoom(4, -4);
+    glPixelZoom(ZOOM, -ZOOM);
     glDrawPixels(193, 193, GL_RGB, GL_UNSIGNED_BYTE, gfx->buf);
 }
 
@@ -202,7 +267,7 @@ static void * run_loop(void *ud)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
-    spgt->window = glfwCreateWindow(193, 193, "spigot", NULL, NULL);
+    spgt->window = glfwCreateWindow(193 * ZOOM, 193 * ZOOM, "spigot", NULL, NULL);
 
 	if (!spgt->window) {
 		glfwTerminate();
@@ -257,6 +322,20 @@ void spigot_stop(spigot_graphics *spgt)
     }
 }
 
+void spigot_gfx_init(spigot_graphics *gfx)
+{
+    int i;
+    spigot_color clr;
+    color_rgb(&clr, 0x000000);
+    for(i = 0; i < 193 * 193 * 3; i+=3) {
+        gfx->buf[i] = clr.r;
+        gfx->buf[i+ 1] = clr.g;
+        gfx->buf[i + 2] = clr.b;
+    }
+
+    parse_code(gfx);
+}
+
 spigot_graphics * spigot_gfx_new()
 {
     spigot_graphics *gfx;
@@ -269,32 +348,6 @@ spigot_graphics * spigot_gfx_new()
     tmp = 0b10101111;
     gfx = malloc(sizeof(spigot_graphics));
     gfx->buf = malloc(193 * 193 * 3 * sizeof(unsigned char));
-
-    color_rgb(&clr, 0x000000);
-    for(i = 0; i < 193 * 193 * 3; i+=3) {
-        gfx->buf[i] = clr.r;
-        gfx->buf[i+ 1] = clr.g;
-        gfx->buf[i + 2] = clr.b;
-    }
-
-    color_rgb(&clr, 0x84de02);
-    /*
-    gfx->buf[0] = clr.r;
-    gfx->buf[1] = clr.g;
-    gfx->buf[2] = clr.b;
-    */
-
-    spigot_draw_bitmap(gfx, &clr, 0, 0, 5, 5, spigot_bitmaps);
-    /*
-    for(i = 0; i < 8; i++) {
-        if(tmp & 1 << i) {
-            pos = i * 3;
-            gfx->buf[pos] = clr.r;
-            gfx->buf[pos + 1] = clr.g;
-            gfx->buf[pos + 2] = clr.b;
-        }
-    }
-    */
     return gfx;
 }
 
