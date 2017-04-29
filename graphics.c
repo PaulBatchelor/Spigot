@@ -12,12 +12,19 @@
 
 #include "bitmaps.h"
 
+#define WIDTH 193
+
+typedef struct {
+    char r, g, b;
+} spigot_color;
+
 struct spigot_graphics {
     int run;
     pthread_t thread;
     GLFWwindow *window;
     int please_draw;
     spigot_pbrain *pbrain;
+    unsigned char *buf;
 };
 
 static void clear_color_rgb(uint32_t rgb)
@@ -29,17 +36,46 @@ static void clear_color_rgb(uint32_t rgb)
     glClearColor(r / 255.0, g / 255.0, b / 255.0, 1.0);
 }
 
-static void color_rgb(uint32_t rgb)
+static void color_rgb(spigot_color *clr, uint32_t rgb)
 {
-    int r, g, b;
-    r = (rgb & 0xff0000) >> 16;
-    g = (rgb & 0x00ff00) >> 8;
-    b = (rgb & 0x0000ff);
-    glColor3f(r / 255.0, g / 255.0, b / 255.0);
+    clr->r = (rgb & 0xff0000) >> 16;
+    clr->g = (rgb & 0x00ff00) >> 8;
+    clr->b = (rgb & 0x0000ff);
 }
 
-static void draw(spigot_pbrain *spb)
+static void spigot_draw_bitmap(spigot_graphics *gfx, spigot_color *clr, 
+        int x_pos, int y_pos, int w, int h, unsigned char *glyph)
 {
+    int x_bytes;
+    int y_bytes;
+    int x, y, c;
+    unsigned char byte;
+    int pos;
+    int xp;
+
+    x_bytes = ((w - 1) >> 3)  + 1;
+
+    y_pos = 0;
+    for(y = 0; y < h; y++) {
+        for(x = 0; x < x_bytes; x++) {
+            byte = glyph[y * x_bytes + x];
+            x_pos = 0;
+            pos = y * WIDTH * 3 + x_pos * 3;
+            for(c = 0; c < 8 || xp < w; c++) {
+                if(byte & 1 << c) {
+                    
+                }
+                x_pos++;
+            }
+        }
+    }
+
+}
+
+/* static void draw(spigot_pbrain *spb) */
+static void draw(spigot_graphics *gfx)
+{
+/*
     const char *code;
     int len, s;
     int x, y;
@@ -48,7 +84,9 @@ static void draw(spigot_pbrain *spb)
     int xoff;
     int yoff;
     int cnt;
+    spigot_pbrain *spb;
 
+    spb = gfx->pbrain;
     pos = spigot_get_pos(spb);
 
     x = pos % 12; 
@@ -58,7 +96,6 @@ static void draw(spigot_pbrain *spb)
     clear_color_rgb(0x000000);
     color_rgb(0x84de02);
     glClear(GL_COLOR_BUFFER_BIT);
-
     glRasterPos2i(3, 11);
     s = 0;
     cnt = 0;
@@ -109,6 +146,12 @@ static void draw(spigot_pbrain *spb)
     glBitmap(1, 17, 0, 0, -16, 0, spigot_box);
     glBitmap(16, 1, 0, 0, 0, 15, spigot_box + 17);
     glBitmap(16, 1, 0, 0, 0, 0, spigot_box + 17);
+*/
+    glClear(GL_COLOR_BUFFER_BIT);
+    /* glRasterPos2i(193, 193 * 4); */
+    glRasterPos2i(0, 0);
+    glPixelZoom(4, -4);
+    glDrawPixels(193, 193, GL_RGB, GL_UNSIGNED_BYTE, gfx->buf);
 }
 
 static void init(void)
@@ -178,15 +221,17 @@ static void * run_loop(void *ud)
         glfwPollEvents();
 		glfwGetFramebufferSize(spgt->window, &w, &h);
 
-        glViewport(0, 0, (GLsizei) w, (GLsizei) h);
+        glViewport(0, 0, (GLsizei) w, (GLsizei) h); 
+        /* glViewport(w, h, (GLsizei) w, (GLsizei) h); */
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
+        /* glOrtho(0, w, h, 0, -1.0, 1.0); */
         glOrtho(0, w, h, 0, -1.0, 1.0);
         glMatrixMode(GL_MODELVIEW);
 
         if(spgt->please_draw) {
             spgt->please_draw = 0;
-            draw(spgt->pbrain);
+            draw(spgt);
             glfwSwapBuffers(spgt->window);
         }
         usleep(8000);
@@ -214,11 +259,48 @@ void spigot_stop(spigot_graphics *spgt)
 
 spigot_graphics * spigot_gfx_new()
 {
-    return malloc(sizeof(spigot_graphics));
+    spigot_graphics *gfx;
+    spigot_color clr;
+    int i;
+
+    unsigned char tmp;
+    int pos;
+
+    tmp = 0b10101111;
+    gfx = malloc(sizeof(spigot_graphics));
+    gfx->buf = malloc(193 * 193 * 3 * sizeof(unsigned char));
+
+    color_rgb(&clr, 0x000000);
+    for(i = 0; i < 193 * 193 * 3; i+=3) {
+        gfx->buf[i] = clr.r;
+        gfx->buf[i+ 1] = clr.g;
+        gfx->buf[i + 2] = clr.b;
+    }
+
+    color_rgb(&clr, 0x84de02);
+    /*
+    gfx->buf[0] = clr.r;
+    gfx->buf[1] = clr.g;
+    gfx->buf[2] = clr.b;
+    */
+
+    spigot_draw_bitmap(gfx, &clr, 0, 0, 5, 5, spigot_bitmaps);
+    /*
+    for(i = 0; i < 8; i++) {
+        if(tmp & 1 << i) {
+            pos = i * 3;
+            gfx->buf[pos] = clr.r;
+            gfx->buf[pos + 1] = clr.g;
+            gfx->buf[pos + 2] = clr.b;
+        }
+    }
+    */
+    return gfx;
 }
 
 void spigot_gfx_free(spigot_graphics *gfx)
 {
+    free(gfx->buf);
     free(gfx);
 }
 
