@@ -1,4 +1,4 @@
-static unsigned char spigot_bitmaps[] =
+static const unsigned char spigot_bitmaps[] =
 {
 /* + */
 0b00100,
@@ -65,7 +65,7 @@ static unsigned char spigot_bitmaps[] =
 
 };
 
-const unsigned char spigot_box[] = 
+static const unsigned char spigot_box[] = 
 {
 /* vline */    
 0b10000000, 

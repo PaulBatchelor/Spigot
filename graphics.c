@@ -44,6 +44,8 @@ static void color_rgb(spigot_color *clr, uint32_t rgb)
     clr->b = (rgb & 0x0000ff);
 }
 
+/* NOTE: dimensions should be multiples of 8. if not, you better zero
+ * pad your bitmaps */
 static void spigot_draw_bitmap(spigot_graphics *gfx, spigot_color *clr, 
         int x_pos, int y_pos, int w, int h, unsigned char *glyph)
 {
@@ -56,18 +58,19 @@ static void spigot_draw_bitmap(spigot_graphics *gfx, spigot_color *clr,
     int base;
 
     x_bytes = ((w - 1) >> 3) + 1;
+    printf("x_bytes is %d\n", x_bytes);
 
     base = y_pos * WIDTH * 3 + x_pos * 3;
     for(y = 0; y < h; y++) {
         xp = 0;
         for(x = 0; x < x_bytes; x++) {
             byte = glyph[y * x_bytes + x];
-            for(c = 7; c >= 0 || xp < w; c--) {
+            for(c = 7; c >= 0; c--) {
                 pos = base + y * WIDTH * 3 + xp * 3;
-                if(byte & (1 << c)) {
-                   gfx->buf[pos] = clr->r; 
-                   gfx->buf[pos + 1] = clr->g; 
-                   gfx->buf[pos + 2] = clr->b; 
+                if((byte & (1 << c))) {
+                    gfx->buf[pos] = clr->r; 
+                    gfx->buf[pos + 1] = clr->g; 
+                    gfx->buf[pos + 2] = clr->b; 
                 } 
                 xp++;
             }
@@ -78,9 +81,9 @@ static void spigot_draw_bitmap(spigot_graphics *gfx, spigot_color *clr,
 
 static void parse_code(spigot_graphics *gfx)
 {
+    spigot_color clr;
     const char *code;
     spigot_pbrain *spb;
-    spigot_color clr;
     int x_pos, y_pos;
     int len;
     int s;
@@ -126,7 +129,7 @@ static void parse_code(spigot_graphics *gfx)
                 off = 40;
                 break;
         }
-        spigot_draw_bitmap(gfx, &clr, x_pos * 16, y_pos * 16, 5, 5, spigot_bitmaps + off);
+        spigot_draw_bitmap(gfx, &clr, x_pos * 16 + 3, y_pos * 16 + 6, 5, 5, spigot_bitmaps + off);
         x_pos++;
 
         if(x_pos > 11) {
@@ -135,6 +138,12 @@ static void parse_code(spigot_graphics *gfx)
         }
         s++;
     }
+    color_rgb(&clr, 0x84de02);
+
+    spigot_draw_bitmap(gfx, &clr, 0, 0, 1, 17, spigot_box);
+    spigot_draw_bitmap(gfx, &clr, 16, 0, 1, 17, spigot_box);
+    spigot_draw_bitmap(gfx, &clr, 0, 16, 16, 1, spigot_box + 17);
+    spigot_draw_bitmap(gfx, &clr, 0, 0, 16, 1, spigot_box + 17);
 }
 
 /* static void draw(spigot_pbrain *spb) */
