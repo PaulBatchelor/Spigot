@@ -146,78 +146,6 @@ static void parse_code(spigot_graphics *gfx)
 /* static void draw(spigot_pbrain *spb) */
 static void draw(spigot_graphics *gfx)
 {
-/*
-    const char *code;
-    int len, s;
-    int x, y;
-    int pos;
-    int off;
-    int xoff;
-    int yoff;
-    int cnt;
-    spigot_pbrain *spb;
-
-    spb = gfx->pbrain;
-    pos = spigot_get_pos(spb);
-
-    x = pos % 12; 
-    y = pos / 12;
-    code = spigot_get_code(spb);
-    len = spigot_get_length(spb);
-    clear_color_rgb(0x000000);
-    color_rgb(0x84de02);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glRasterPos2i(3, 11);
-    s = 0;
-    cnt = 0;
-    while(s < len) {
-        xoff = 16;
-        yoff = 0;
-        switch(code[s]) {
-            case '+':
-                off = 0;
-                break;
-            case '-':
-                off = 5;
-                break;
-            case '<':
-                off = 10;
-                break;
-            case '>':
-                off = 15;
-                break;
-            case '.':
-                off = 20;
-                break;
-            case ',':
-                off = 25;
-                break;
-            case '[':
-                off = 30;
-                break;
-            case ']':
-                off = 35;
-                break;
-            default:
-                off = 40;
-                break;
-        }
-        if(cnt == 11) {
-            cnt = 0;
-            xoff = -176;
-            yoff = -16;
-        }
-        glBitmap(8, 5, 0, 0, xoff, yoff, spigot_bitmaps + off);
-        s++;
-        cnt++;
-    }
-    
-    glRasterPos2i(x * 16, 16 + y * 16);
-    glBitmap(1, 17, 0, 0, 16, 0, spigot_box);
-    glBitmap(1, 17, 0, 0, -16, 0, spigot_box);
-    glBitmap(16, 1, 0, 0, 0, 15, spigot_box + 17);
-    glBitmap(16, 1, 0, 0, 0, 0, spigot_box + 17);
-*/
     spigot_color fg;
     spigot_color bg;
     int pos;
@@ -232,7 +160,6 @@ static void draw(spigot_graphics *gfx)
     draw_box(gfx, &bg, gfx->prev);
     draw_box(gfx, &fg, pos);
     gfx->prev = pos;
-    /* glRasterPos2i(193, 193 * 4); */
     glRasterPos2i(0, 0);
     glPixelZoom(ZOOM, -ZOOM);
     glDrawPixels(193, 193, GL_RGB, GL_UNSIGNED_BYTE, gfx->buf);
