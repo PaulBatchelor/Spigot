@@ -26,16 +26,8 @@ struct spigot_graphics {
     int please_draw;
     spigot_pbrain *pbrain;
     unsigned char *buf;
+    int prev;
 };
-
-static void clear_color_rgb(uint32_t rgb)
-{
-    int r, g, b;
-    r = (rgb & 0xff0000) >> 16;
-    g = (rgb & 0x00ff00) >> 8;
-    b = (rgb & 0x0000ff);
-    glClearColor(r / 255.0, g / 255.0, b / 255.0, 1.0);
-}
 
 static void color_rgb(spigot_color *clr, uint32_t rgb)
 {
@@ -47,10 +39,9 @@ static void color_rgb(spigot_color *clr, uint32_t rgb)
 /* NOTE: dimensions should be multiples of 8. if not, you better zero
  * pad your bitmaps */
 static void spigot_draw_bitmap(spigot_graphics *gfx, spigot_color *clr, 
-        int x_pos, int y_pos, int w, int h, unsigned char *glyph)
+        int x_pos, int y_pos, int w, int h, const unsigned char *glyph)
 {
     int x_bytes;
-    int y_bytes;
     int x, y, c;
     unsigned char byte;
     int pos;
@@ -58,7 +49,6 @@ static void spigot_draw_bitmap(spigot_graphics *gfx, spigot_color *clr,
     int base;
 
     x_bytes = ((w - 1) >> 3) + 1;
-    printf("x_bytes is %d\n", x_bytes);
 
     base = y_pos * WIDTH * 3 + x_pos * 3;
     for(y = 0; y < h; y++) {
@@ -77,6 +67,19 @@ static void spigot_draw_bitmap(spigot_graphics *gfx, spigot_color *clr,
         }
     }
 
+}
+
+static void draw_box(spigot_graphics *gfx, spigot_color *clr, int pos)
+{
+    int x, y;
+
+    x = (pos % 12) * 16;
+    y = (pos / 12) * 16;
+
+    spigot_draw_bitmap(gfx, clr, x, y, 1, 17, spigot_box);
+    spigot_draw_bitmap(gfx, clr, x + 16, y, 1, 17, spigot_box);
+    spigot_draw_bitmap(gfx, clr, x, y + 16, 16, 1, spigot_box + 17);
+    spigot_draw_bitmap(gfx, clr, x, y, 16, 1, spigot_box + 17);
 }
 
 static void parse_code(spigot_graphics *gfx)
@@ -138,12 +141,6 @@ static void parse_code(spigot_graphics *gfx)
         }
         s++;
     }
-    color_rgb(&clr, 0x84de02);
-
-    spigot_draw_bitmap(gfx, &clr, 0, 0, 1, 17, spigot_box);
-    spigot_draw_bitmap(gfx, &clr, 16, 0, 1, 17, spigot_box);
-    spigot_draw_bitmap(gfx, &clr, 0, 16, 16, 1, spigot_box + 17);
-    spigot_draw_bitmap(gfx, &clr, 0, 0, 16, 1, spigot_box + 17);
 }
 
 /* static void draw(spigot_pbrain *spb) */
@@ -221,7 +218,20 @@ static void draw(spigot_graphics *gfx)
     glBitmap(16, 1, 0, 0, 0, 15, spigot_box + 17);
     glBitmap(16, 1, 0, 0, 0, 0, spigot_box + 17);
 */
+    spigot_color fg;
+    spigot_color bg;
+    int pos;
+
+    pos = spigot_get_pos(gfx->pbrain);
+
+    color_rgb(&fg, 0x84de02);
+    color_rgb(&bg, 0x000000);
+
     glClear(GL_COLOR_BUFFER_BIT);
+
+    draw_box(gfx, &bg, gfx->prev);
+    draw_box(gfx, &fg, pos);
+    gfx->prev = pos;
     /* glRasterPos2i(193, 193 * 4); */
     glRasterPos2i(0, 0);
     glPixelZoom(ZOOM, -ZOOM);
@@ -341,20 +351,13 @@ void spigot_gfx_init(spigot_graphics *gfx)
         gfx->buf[i+ 1] = clr.g;
         gfx->buf[i + 2] = clr.b;
     }
-
+    gfx->prev = 0;
     parse_code(gfx);
 }
 
 spigot_graphics * spigot_gfx_new()
 {
     spigot_graphics *gfx;
-    spigot_color clr;
-    int i;
-
-    unsigned char tmp;
-    int pos;
-
-    tmp = 0b10101111;
     gfx = malloc(sizeof(spigot_graphics));
     gfx->buf = malloc(193 * 193 * 3 * sizeof(unsigned char));
     return gfx;
