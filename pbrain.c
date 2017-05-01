@@ -190,3 +190,24 @@ void spigot_move_right(spigot_pbrain *spb)
     spb->curpos++;
     spb->q = spb->curpos;
 }
+
+void spigot_move_up(spigot_pbrain *spb)
+{
+    int val;
+
+    val = spb->curpos - 12;
+
+    if(val >= 0) {
+        spb->curpos = val;
+    }
+}
+
+void spigot_move_down(spigot_pbrain *spb)
+{
+    int val;
+
+    val = spb->curpos + 12;
+    if(val <= 96) {
+        spb->curpos = val;
+    }
+}
