@@ -201,6 +201,10 @@ static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
                 spigot_move_up(gfx->pbrain);
                 gfx->please_draw = 1;
                 break;
+            case GLFW_KEY_Z:
+                spigot_reset(gfx->pbrain);
+                gfx->please_draw = 1;
+                break;
             default:
                 break;
         }

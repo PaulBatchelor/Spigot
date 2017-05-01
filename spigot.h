@@ -24,12 +24,11 @@ void spigot_move_left(spigot_pbrain *spb);
 void spigot_move_right(spigot_pbrain *spb);
 void spigot_move_down(spigot_pbrain *spb);
 void spigot_move_up(spigot_pbrain *spb);
+void spigot_reset(spigot_pbrain *spb);
+
 void spigot_gfx_init(spigot_graphics *spgt);
-
 void spigot_gfx_free(spigot_graphics *gfx);
-
 void spigot_gfx_step(spigot_graphics *gfx);
-
 void spigot_gfx_pbrain_set(spigot_graphics *gfx, spigot_pbrain *spb);
 
 #endif

@@ -52,7 +52,6 @@ static void e(spigot_pbrain *spb, int i){
 
 static void init(spigot_pbrain *spb, const char *str, int len)
 {
-    memset(spb->a, 0, sizeof(short) * SIZE);
     memset(spb->s, 0, sizeof(int) * SIZE);
     memset(spb->t, 0, sizeof(int) * SIZE);
     memset(spb->code, 0, sizeof(char) * SIZE);
@@ -64,12 +63,7 @@ static void init(spigot_pbrain *spb, const char *str, int len)
     */
     strncpy(spb->code, str, len);
     spb->length = len;
-    spb->curpos = 0;
-    spb->q = 0;
-    spb->play = 1;
-    spb->sp = 0;
-    spb->in = 0;
-    spb->p = 0;
+    spigot_reset(spb);
     for(spb->q=0;spb->q<spb->length;spb->q++){
         switch(spb->code[spb->q]){
             case '(': case '[': spb->s[spb->sp++]=spb->q ; break;
@@ -210,4 +204,15 @@ void spigot_move_down(spigot_pbrain *spb)
     if(val <= 96) {
         spb->curpos = val;
     }
+}
+
+void spigot_reset(spigot_pbrain *spb)
+{
+    spb->curpos = 0;
+    spb->q = 0;
+    spb->play = 1;
+    spb->sp = 0;
+    spb->in = 0;
+    spb->p = 0;
+    memset(spb->a, 0, sizeof(short) * SIZE);
 }
