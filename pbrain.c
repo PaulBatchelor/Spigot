@@ -64,6 +64,12 @@ static void init(spigot_pbrain *spb, const char *str, int len)
     */
     strncpy(spb->code, str, len);
     spb->length = len;
+    spb->curpos = 0;
+    spb->q = 0;
+    spb->play = 1;
+    spb->sp = 0;
+    spb->in = 0;
+    spb->p = 0;
     for(spb->q=0;spb->q<spb->length;spb->q++){
         switch(spb->code[spb->q]){
             case '(': case '[': spb->s[spb->sp++]=spb->q ; break;
@@ -79,9 +85,6 @@ static void init(spigot_pbrain *spb, const char *str, int len)
     }
     if(spb->sp) e(spb, spb->code[spb->s[--spb->sp]]=='['?4:6);
     for(spb->q=0;spb->q<=USHRT_MAX;spb->q++) spb->ptable[spb->q]=-1;
-    spb->curpos = 0;
-    spb->q = 0;
-    spb->play = 1;
 }
 
 static int step(spigot_pbrain *spb)
@@ -169,13 +172,21 @@ void spigot_toggle_playback(spigot_pbrain *spb)
 void spigot_move_left(spigot_pbrain *spb)
 {
     if(spb->q != 0) {
+        /* 
         spb->q--;
         spb->curpos = spb->q;
+        */
+        spb->curpos--;
+        spb->q = spb->curpos;
     } 
 }
 
 void spigot_move_right(spigot_pbrain *spb)
 {
+    /*
     spb->q++;
     spb->curpos = spb->q;
+    */
+    spb->curpos++;
+    spb->q = spb->curpos;
 }
