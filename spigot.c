@@ -28,7 +28,6 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             stuff = malloc(sizeof(spigot_stuff));
             stuff->gfx = spigot_gfx_new();
             stuff->pbrain = spigot_pbrain_new();
-            spigot_gfx_pbrain_set(stuff->gfx, stuff->pbrain);
             spigot_pbrain_state(stuff->pbrain, &stuff->state);
             spigot_gfx_set_state(stuff->gfx, &stuff->state);
             *ud = stuff;

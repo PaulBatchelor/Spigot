@@ -16,6 +16,7 @@ typedef struct {
     spigot_fun toggle;
     spigot_fun reset;
     spigot_drawfun draw;
+    spigot_drawfun init;
     void *ud;
 } spigot_state;
 
@@ -47,5 +48,9 @@ void spigot_gfx_pbrain_set(spigot_graphics *gfx, spigot_pbrain *spb);
 void spigot_gfx_set_state(spigot_graphics *gfx, spigot_state *state);
 
 void spigot_pbrain_state(spigot_pbrain *spb, spigot_state *state);
+
+void spigot_draw_box(spigot_graphics *gfx, spigot_color *clr, int pos);
+void spigot_draw_bitmap(spigot_graphics *gfx, spigot_color *clr, 
+        int x_pos, int y_pos, int w, int h, const unsigned char *glyph);
 
 #endif

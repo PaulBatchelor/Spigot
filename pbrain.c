@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "bitmaps.h"
 #include "spigot.h"
 
 #define SIZE 65536
@@ -254,6 +255,67 @@ static void pbrain_draw(spigot_graphics *gfx, void *ud)
     pbrain->prev = pos;
 }
 
+static void parse_code(spigot_graphics *gfx, void *ud)
+{
+    spigot_color clr;
+    const char *code;
+    spigot_pbrain *spb;
+    int x_pos, y_pos;
+    int len;
+    int s;
+    int off;
+
+    spb = ud;
+    len = spigot_get_length(spb);
+    code = spigot_get_code(spb);
+
+    x_pos= 0;
+    y_pos = 0;
+    s = 0;
+    off = 0;
+
+    spigot_color_rgb(&clr, 0x84de02);
+    while(s < len) {
+        switch(code[s]) {
+            case '+':
+                off = 0;
+                break;
+            case '-':
+                off = 5;
+                break;
+            case '<':
+                off = 10;
+                break;
+            case '>':
+                off = 15;
+                break;
+            case '.':
+                off = 20;
+                break;
+            case ',':
+                off = 25;
+                break;
+            case '[':
+                off = 30;
+                break;
+            case ']':
+                off = 35;
+                break;
+            default:
+                off = 40;
+                break;
+        }
+        spigot_draw_bitmap(gfx, &clr, x_pos * 16 + 3, y_pos * 16 + 6, 5, 5, spigot_bitmaps + off);
+        x_pos++;
+
+        if(x_pos > 11) {
+            x_pos = 0;
+            y_pos++;
+        }
+        s++;
+    }
+}
+
 void spigot_pbrain_state(spigot_pbrain *spb, spigot_state *state)
 {
     state->up = spigot_move_up;
@@ -263,5 +325,6 @@ void spigot_pbrain_state(spigot_pbrain *spb, spigot_state *state)
     state->toggle = spigot_toggle_playback;
     state->reset = spigot_reset;
     state->draw = pbrain_draw;
+    state->init = parse_code;
     state->ud = spb;
 }
