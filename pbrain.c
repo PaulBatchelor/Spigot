@@ -30,6 +30,7 @@ struct spigot_pbrain {
     unsigned short in;
     const char *f;
     int play;
+    int prev;
 };
 
 static void e(spigot_pbrain *spb, int i){
@@ -60,6 +61,7 @@ static void spigot_reset(void *ud)
     spb->sp = 0;
     spb->in = 0;
     spb->p = 0;
+    spb->prev = 0;
     memset(spb->a, 0, sizeof(short) * SIZE);
 }
 
@@ -233,6 +235,25 @@ static void spigot_move_down(void *ud)
     }
 }
 
+static void pbrain_draw(spigot_graphics *gfx, void *ud)
+{
+    spigot_pbrain *pbrain;
+    spigot_color fg;
+    spigot_color bg;
+    int pos;
+
+    pbrain = ud;
+
+    pos = spigot_get_pos(pbrain);
+
+    spigot_color_rgb(&fg, 0x84de02);
+    spigot_color_rgb(&bg, 0x000000);
+
+    spigot_draw_box(gfx, &bg, pbrain->prev);
+    spigot_draw_box(gfx, &fg, pos);
+    pbrain->prev = pos;
+}
+
 void spigot_pbrain_state(spigot_pbrain *spb, spigot_state *state)
 {
     state->up = spigot_move_up;
@@ -241,5 +262,6 @@ void spigot_pbrain_state(spigot_pbrain *spb, spigot_state *state)
     state->right = spigot_move_right;
     state->toggle = spigot_toggle_playback;
     state->reset = spigot_reset;
+    state->draw = pbrain_draw;
     state->ud = spb;
 }

@@ -15,10 +15,6 @@
 #define WIDTH 193
 #define ZOOM 4
 
-typedef struct {
-    char r, g, b;
-} spigot_color;
-
 struct spigot_graphics {
     int run;
     pthread_t thread;
@@ -26,11 +22,10 @@ struct spigot_graphics {
     int please_draw;
     spigot_pbrain *pbrain;
     unsigned char *buf;
-    int prev;
     spigot_state *state;
 };
 
-static void color_rgb(spigot_color *clr, uint32_t rgb)
+void spigot_color_rgb(spigot_color *clr, long rgb)
 {
     clr->r = (rgb & 0xff0000) >> 16;
     clr->g = (rgb & 0x00ff00) >> 8;
@@ -70,7 +65,7 @@ static void spigot_draw_bitmap(spigot_graphics *gfx, spigot_color *clr,
 
 }
 
-static void draw_box(spigot_graphics *gfx, spigot_color *clr, int pos)
+void spigot_draw_box(spigot_graphics *gfx, spigot_color *clr, int pos)
 {
     int x, y;
 
@@ -102,7 +97,7 @@ static void parse_code(spigot_graphics *gfx)
     s = 0;
     off = 0;
 
-    color_rgb(&clr, 0x84de02);
+    spigot_color_rgb(&clr, 0x84de02);
     while(s < len) {
         switch(code[s]) {
             case '+':
@@ -147,20 +142,12 @@ static void parse_code(spigot_graphics *gfx)
 /* static void draw(spigot_pbrain *spb) */
 static void draw(spigot_graphics *gfx)
 {
-    spigot_color fg;
-    spigot_color bg;
-    int pos;
+    spigot_state *state;
 
-    pos = spigot_get_pos(gfx->pbrain);
+    state = gfx->state;
 
-    color_rgb(&fg, 0x84de02);
-    color_rgb(&bg, 0x000000);
-
+    state->draw(gfx, state->ud);
     glClear(GL_COLOR_BUFFER_BIT);
-
-    draw_box(gfx, &bg, gfx->prev);
-    draw_box(gfx, &fg, pos);
-    gfx->prev = pos;
     glRasterPos2i(0, 0);
     glPixelZoom(ZOOM, -ZOOM);
     glDrawPixels(193, 193, GL_RGB, GL_UNSIGNED_BYTE, gfx->buf);
@@ -289,13 +276,12 @@ void spigot_gfx_init(spigot_graphics *gfx)
 {
     int i;
     spigot_color clr;
-    color_rgb(&clr, 0x000000);
+    spigot_color_rgb(&clr, 0x000000);
     for(i = 0; i < 193 * 193 * 3; i+=3) {
         gfx->buf[i] = clr.r;
         gfx->buf[i+ 1] = clr.g;
         gfx->buf[i + 2] = clr.b;
     }
-    gfx->prev = 0;
     parse_code(gfx);
 }
 

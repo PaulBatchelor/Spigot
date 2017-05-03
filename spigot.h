@@ -6,6 +6,7 @@ typedef struct spigot_pbrain spigot_pbrain;
 typedef struct spigot_graphics spigot_graphics;
 
 typedef void (*spigot_fun)(void *);
+typedef void (*spigot_drawfun)(spigot_graphics *, void *);
 
 typedef struct {
     spigot_fun up;
@@ -14,8 +15,15 @@ typedef struct {
     spigot_fun right;
     spigot_fun toggle;
     spigot_fun reset;
+    spigot_drawfun draw;
     void *ud;
 } spigot_state;
+
+typedef struct {
+    char r, g, b;
+} spigot_color;
+
+void spigot_color_rgb(spigot_color *clr, long rgb);
 
 int spigot_init(spigot_pbrain *spb, const char *str);
 int spigot_constant(spigot_pbrain *spb, unsigned short val);
