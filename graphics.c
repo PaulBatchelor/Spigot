@@ -188,7 +188,7 @@ static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
     if(action == GLFW_PRESS || action == GLFW_REPEAT) {
         switch(key) {
             case GLFW_KEY_SPACE:
-                spigot_toggle_playback(gfx->pbrain);
+                state->toggle(state->ud);
                 break;
             case GLFW_KEY_H:
                 state->left(state->ud);
@@ -207,7 +207,7 @@ static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
                 gfx->please_draw = 1;
                 break;
             case GLFW_KEY_Z:
-                spigot_reset(gfx->pbrain);
+                state->reset(state->ud);
                 gfx->please_draw = 1;
                 break;
             default:

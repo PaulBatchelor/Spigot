@@ -50,6 +50,20 @@ static void e(spigot_pbrain *spb, int i){
     printf(".\n");
 }
 
+static void spigot_reset(void *ud)
+{
+    spigot_pbrain *spb;
+    spb = ud;
+    spb->curpos = 0;
+    spb->q = 0;
+    spb->play = 1;
+    spb->sp = 0;
+    spb->in = 0;
+    spb->p = 0;
+    memset(spb->a, 0, sizeof(short) * SIZE);
+}
+
+
 static void init(spigot_pbrain *spb, const char *str, int len)
 {
     memset(spb->s, 0, sizeof(int) * SIZE);
@@ -63,7 +77,7 @@ static void init(spigot_pbrain *spb, const char *str, int len)
     */
     strncpy(spb->code, str, len);
     spb->length = len;
-    spigot_reset(spb);
+    spigot_reset((void *)spb);
     for(spb->q=0;spb->q<spb->length;spb->q++){
         switch(spb->code[spb->q]){
             case '(': case '[': spb->s[spb->sp++]=spb->q ; break;
@@ -154,7 +168,7 @@ void spigot_pbrain_free(spigot_pbrain *spb)
     free(spb);
 }
 
-void spigot_toggle_playback(void *ud)
+static void spigot_toggle_playback(void *ud)
 {
     spigot_pbrain *spb;
     spb = ud;
@@ -165,7 +179,7 @@ void spigot_toggle_playback(void *ud)
     }
 }
 
-void spigot_move_left(void *ud)
+static void spigot_move_left(void *ud)
 {
     spigot_pbrain *spb;
 
@@ -180,7 +194,7 @@ void spigot_move_left(void *ud)
     } 
 }
 
-void spigot_move_right(void *ud)
+static void spigot_move_right(void *ud)
 {
     spigot_pbrain *spb;
 
@@ -193,7 +207,7 @@ void spigot_move_right(void *ud)
     spb->q = spb->curpos;
 }
 
-void spigot_move_up(void *ud)
+static void spigot_move_up(void *ud)
 {
     int val;
     spigot_pbrain *spb;
@@ -206,7 +220,7 @@ void spigot_move_up(void *ud)
     }
 }
 
-void spigot_move_down(void *ud)
+static void spigot_move_down(void *ud)
 {
     int val;
     spigot_pbrain *spb;
@@ -219,22 +233,13 @@ void spigot_move_down(void *ud)
     }
 }
 
-void spigot_reset(spigot_pbrain *spb)
-{
-    spb->curpos = 0;
-    spb->q = 0;
-    spb->play = 1;
-    spb->sp = 0;
-    spb->in = 0;
-    spb->p = 0;
-    memset(spb->a, 0, sizeof(short) * SIZE);
-}
-
 void spigot_pbrain_state(spigot_pbrain *spb, spigot_state *state)
 {
     state->up = spigot_move_up;
     state->down = spigot_move_down;
     state->left = spigot_move_left;
     state->right = spigot_move_right;
+    state->toggle = spigot_toggle_playback;
+    state->reset = spigot_reset;
     state->ud = spb;
 }

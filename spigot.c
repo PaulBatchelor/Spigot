@@ -25,9 +25,6 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
                 stack->error++;
                 return PLUMBER_NOTOK;
             }
-            /* malloc and assign address to user data */
-            /*foo = malloc(sizeof(foo_data));
-            *ud = foo;*/
             stuff = malloc(sizeof(spigot_stuff));
             stuff->gfx = spigot_gfx_new();
             stuff->pbrain = spigot_pbrain_new();

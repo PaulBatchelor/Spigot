@@ -12,6 +12,8 @@ typedef struct {
     spigot_fun down;
     spigot_fun left;
     spigot_fun right;
+    spigot_fun toggle;
+    spigot_fun reset;
     void *ud;
 } spigot_state;
 
@@ -29,13 +31,6 @@ void spigot_pbrain_free(spigot_pbrain *spb);
 spigot_graphics * spigot_gfx_new();
 void spigot_start(spigot_graphics *spgt);
 void spigot_stop(spigot_graphics *spgt);
-
-void spigot_toggle_playback(void *ud);
-void spigot_move_left(void *ud);
-void spigot_move_right(void *ud);
-void spigot_move_down(void *ud);
-void spigot_move_up(void *ud);
-void spigot_reset(spigot_pbrain *spb);
 
 void spigot_gfx_init(spigot_graphics *spgt);
 void spigot_gfx_free(spigot_graphics *gfx);
