@@ -27,6 +27,7 @@ struct spigot_graphics {
     spigot_pbrain *pbrain;
     unsigned char *buf;
     int prev;
+    spigot_state *state;
 };
 
 static void color_rgb(spigot_color *clr, uint32_t rgb)
@@ -178,7 +179,11 @@ static void errorcb(int error, const char* desc)
 
 static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    spigot_graphics *gfx = glfwGetWindowUserPointer(window);
+    spigot_graphics *gfx;
+    spigot_state *state;
+    
+    gfx = glfwGetWindowUserPointer(window);
+    state = gfx->state;
 
     if(action == GLFW_PRESS || action == GLFW_REPEAT) {
         switch(key) {
@@ -186,19 +191,19 @@ static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
                 spigot_toggle_playback(gfx->pbrain);
                 break;
             case GLFW_KEY_H:
-                spigot_move_left(gfx->pbrain);
+                state->left(state->ud);
                 gfx->please_draw = 1;
                 break;
             case GLFW_KEY_L:
-                spigot_move_right(gfx->pbrain);
+                state->right(state->ud);
                 gfx->please_draw = 1;
                 break;
             case GLFW_KEY_J:
-                spigot_move_down(gfx->pbrain);
+                state->down(state->ud);
                 gfx->please_draw = 1;
                 break;
             case GLFW_KEY_K:
-                spigot_move_up(gfx->pbrain);
+                state->up(state->ud);
                 gfx->please_draw = 1;
                 break;
             case GLFW_KEY_Z:
@@ -316,4 +321,9 @@ void spigot_gfx_step(spigot_graphics *gfx)
 void spigot_gfx_pbrain_set(spigot_graphics *gfx, spigot_pbrain *spb)
 {
     gfx->pbrain = spb;
+}
+
+void spigot_gfx_set_state(spigot_graphics *gfx, spigot_state *state)
+{
+    gfx->state = state;
 }

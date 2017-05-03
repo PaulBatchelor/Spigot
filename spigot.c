@@ -8,6 +8,7 @@ typedef struct {
     spigot_graphics *gfx;
     spigot_pbrain *pbrain;
     int load;
+    spigot_state state;
 } spigot_stuff;
 
 static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
@@ -31,6 +32,8 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             stuff->gfx = spigot_gfx_new();
             stuff->pbrain = spigot_pbrain_new();
             spigot_gfx_pbrain_set(stuff->gfx, stuff->pbrain);
+            spigot_pbrain_state(stuff->pbrain, &stuff->state);
+            spigot_gfx_set_state(stuff->gfx, &stuff->state);
             *ud = stuff;
 
             sporth_stack_pop_string(stack);

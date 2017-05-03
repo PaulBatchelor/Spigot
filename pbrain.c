@@ -154,8 +154,10 @@ void spigot_pbrain_free(spigot_pbrain *spb)
     free(spb);
 }
 
-void spigot_toggle_playback(spigot_pbrain *spb)
+void spigot_toggle_playback(void *ud)
 {
+    spigot_pbrain *spb;
+    spb = ud;
     if(spb->play) {
         spb->play = 0;
     } else {
@@ -163,8 +165,11 @@ void spigot_toggle_playback(spigot_pbrain *spb)
     }
 }
 
-void spigot_move_left(spigot_pbrain *spb)
+void spigot_move_left(void *ud)
 {
+    spigot_pbrain *spb;
+
+    spb = ud;
     if(spb->q != 0) {
         /* 
         spb->q--;
@@ -175,8 +180,11 @@ void spigot_move_left(spigot_pbrain *spb)
     } 
 }
 
-void spigot_move_right(spigot_pbrain *spb)
+void spigot_move_right(void *ud)
 {
+    spigot_pbrain *spb;
+
+    spb = ud;
     /*
     spb->q++;
     spb->curpos = spb->q;
@@ -185,9 +193,11 @@ void spigot_move_right(spigot_pbrain *spb)
     spb->q = spb->curpos;
 }
 
-void spigot_move_up(spigot_pbrain *spb)
+void spigot_move_up(void *ud)
 {
     int val;
+    spigot_pbrain *spb;
+    spb = ud;
 
     val = spb->curpos - 12;
 
@@ -196,9 +206,12 @@ void spigot_move_up(spigot_pbrain *spb)
     }
 }
 
-void spigot_move_down(spigot_pbrain *spb)
+void spigot_move_down(void *ud)
 {
     int val;
+    spigot_pbrain *spb;
+
+    spb = ud;
 
     val = spb->curpos + 12;
     if(val <= 96) {
@@ -215,4 +228,13 @@ void spigot_reset(spigot_pbrain *spb)
     spb->in = 0;
     spb->p = 0;
     memset(spb->a, 0, sizeof(short) * SIZE);
+}
+
+void spigot_pbrain_state(spigot_pbrain *spb, spigot_state *state)
+{
+    state->up = spigot_move_up;
+    state->down = spigot_move_down;
+    state->left = spigot_move_left;
+    state->right = spigot_move_right;
+    state->ud = spb;
 }
