@@ -7,12 +7,12 @@ _env var
 
 0.3 dmetro _clk set
 
-2 _clk get 1
+_clk get 1
 
 
 "+[..]"
 
-_spigot fe drop
+_spigot fe 
 
 _clk get _output get * 0.001 0.01 0.1 tenvx _env set
 _env get _output get 

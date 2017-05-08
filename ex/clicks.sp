@@ -30,11 +30,10 @@ _s7 0.5 varset
 
 _buf sr 2 * zeros
 
-0 10 100 randh floor 
 _s1 get 1 50 scale metro _s6 get maytrig dup _clk set
 1 
 ",[..-]+[.-],[><>.><<->,[.-.]<] ...  +[.,] +[>><<,] +[.] +[><.] >.+-<>+[.-,]" 
-_spigot fe drop
+_spigot fe 
 _output get _clk get * _val set
 
 4 _out "ex/clicks.scm" ps

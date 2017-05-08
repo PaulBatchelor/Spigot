@@ -35,6 +35,7 @@ struct spigot_pbrain {
     int play;
     int prev;
     SPFLOAT *out;
+    const char *pstr;
 };
 
 static void e(spigot_pbrain *spb, int i){
@@ -70,8 +71,9 @@ static void spigot_reset(void *ud)
 }
 
 
-static void init(spigot_pbrain *spb, const char *str, int len)
+static void init(spigot_pbrain *spb)
 {
+    unsigned int len;
     memset(spb->s, 0, sizeof(int) * SIZE);
     memset(spb->t, 0, sizeof(int) * SIZE);
     memset(spb->code, 0, sizeof(char) * SIZE);
@@ -81,7 +83,8 @@ static void init(spigot_pbrain *spb, const char *str, int len)
     length = fread(code, 1, SIZE, input);
     fclose(input);
     */
-    strncpy(spb->code, str, len);
+    len = strlen(spb->pstr);
+    strncpy(spb->code, spb->pstr, len);
     spb->length = len;
     spigot_reset((void *)spb);
     for(spb->q=0;spb->q<spb->length;spb->q++){
@@ -121,30 +124,28 @@ static int step(spigot_pbrain *spb)
         return -1;
 }
 
-int spigot_init(spigot_pbrain *spb, const char *str)
+static void spigot_step(void *ud)
 {
-    init(spb, str, strlen(str));
-    spb->q = 0;
-    return 0;
-}
+    spigot_pbrain *spb;
+    int s;
 
-int spigot_step(spigot_pbrain *spb)
-{
-    int s = -1;
-
-    if(spb->play == 0) return s;
+    s = -1;
+    spb = ud;
+    if(spb->play == 0) return;
 
     while(s == -1) {
-        if(spb->q >= spb->length) return 0;
+        if(spb->q >= spb->length) {
+            *spb->out = 0;
+            return;
+        }
         spb->curpos = spb->q;
         s = step(spb);
         spb->q++;
     }
     *spb->out = s;
-    return s;
 }
 
-int spigot_constant(spigot_pbrain *spb, unsigned short val)
+static int spigot_constant(spigot_pbrain *spb, unsigned short val)
 {
     spb->in = val;
     return 0;
@@ -321,8 +322,17 @@ static void parse_code(spigot_graphics *gfx, void *ud)
     }
 }
 
-void spigot_pbrain_state(plumber_data *pd, spigot_pbrain *spb, spigot_state *state)
+static void spigot_pbrain_init(void *ud)
 {
+    spigot_pbrain *spb;
+    spb = ud;
+    init(spb);
+    spb->q = 0;
+}
+
+void spigot_pbrain_state(plumber_data *pd, spigot_state *state)
+{
+    spigot_pbrain *spb;
     state->up = spigot_move_up;
     state->down = spigot_move_down;
     state->left = spigot_move_left;
@@ -330,9 +340,21 @@ void spigot_pbrain_state(plumber_data *pd, spigot_pbrain *spb, spigot_state *sta
     state->toggle = spigot_toggle_playback;
     state->reset = spigot_reset;
     state->draw = pbrain_draw;
-    state->init = parse_code;
+    state->gfx_init = parse_code;
     state->free = free;
+    state->step = spigot_step;
+    state->init = spigot_pbrain_init;
+
+    spb = spigot_pbrain_new();
     state->ud = spb;
     
     plumber_create_var(pd, "output", &spb->out);
+}
+
+void spigot_pbrain_string(spigot_state *state, const char *str)
+{
+    spigot_pbrain *spb;
+
+    spb = state->ud;
+    spb->pstr = str;
 }

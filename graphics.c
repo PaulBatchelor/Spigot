@@ -224,7 +224,7 @@ void spigot_gfx_init(spigot_graphics *gfx)
     }
     /* parse_code(gfx); */
 
-    state->init(gfx, state->ud);
+    state->gfx_init(gfx, state->ud);
 }
 
 spigot_graphics * spigot_gfx_new()
