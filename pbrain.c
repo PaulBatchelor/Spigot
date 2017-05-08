@@ -10,6 +10,8 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+#include <soundpipe.h>
+#include <sporth.h>
 
 #include "bitmaps.h"
 #include "spigot.h"
@@ -32,6 +34,7 @@ struct spigot_pbrain {
     const char *f;
     int play;
     int prev;
+    SPFLOAT *out;
 };
 
 static void e(spigot_pbrain *spb, int i){
@@ -137,6 +140,7 @@ int spigot_step(spigot_pbrain *spb)
         s = step(spb);
         spb->q++;
     }
+    *spb->out = s;
     return s;
 }
 
@@ -166,8 +170,9 @@ spigot_pbrain * spigot_pbrain_new()
     return malloc(sizeof(spigot_pbrain));
 }
 
-void spigot_pbrain_free(spigot_pbrain *spb)
+void spigot_pbrain_free(void *ud)
 {
+    spigot_pbrain *spb = ud;
     free(spb);
 }
 
@@ -316,7 +321,7 @@ static void parse_code(spigot_graphics *gfx, void *ud)
     }
 }
 
-void spigot_pbrain_state(spigot_pbrain *spb, spigot_state *state)
+void spigot_pbrain_state(plumber_data *pd, spigot_pbrain *spb, spigot_state *state)
 {
     state->up = spigot_move_up;
     state->down = spigot_move_down;
@@ -326,5 +331,8 @@ void spigot_pbrain_state(spigot_pbrain *spb, spigot_state *state)
     state->reset = spigot_reset;
     state->draw = pbrain_draw;
     state->init = parse_code;
+    state->free = free;
     state->ud = spb;
+    
+    plumber_create_var(pd, "output", &spb->out);
 }
