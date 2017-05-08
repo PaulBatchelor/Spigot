@@ -33,6 +33,9 @@ static runt_int rproc_pbrain(runt_vm *vm, runt_ptr p)
     spigot_pbrain_state(pd, state);
     spigot_pbrain_string(state, code);
     spigot_pbrain_bind(pd, state, var);
+
+    rc = runt_ppush(vm, &s);
+    s->p = runt_mk_cptr(vm, state);
     return RUNT_OK;
 }
 
@@ -64,7 +67,7 @@ void spigot_load(plumber_data *pd, runt_vm *vm,
     p = runt_mk_cptr(vm, rsd);
 
     runt_mark_set(vm);
-    runt_load_minimal(vm);
+    runt_load_stdlib(vm);
     spigot_word_define(vm, "pbrain", 6, rproc_pbrain, p);
     spigot_word_define(vm, "spigot_state", 12, rproc_state, p);
 

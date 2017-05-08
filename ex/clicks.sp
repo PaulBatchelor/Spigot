@@ -32,7 +32,7 @@ _buf sr 2 * zeros
 
 _s1 get 1 50 scale metro _s6 get maytrig dup _clk set
 1 
-",[..-]+[.-],[><>.><<->,[.-.]<] ...  +[.,] +[>><<,] +[.] +[><.] >.+-<>+[.-,]" 
+"ex/clicks.rnt"
 _spigot fe 
 _output get _clk get * _val set
 
