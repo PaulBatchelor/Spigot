@@ -10,7 +10,7 @@ _env var
 _clk get 1
 
 
-"+[..]"
+"ex/ex.rnt"
 
 _spigot fe 
 

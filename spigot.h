@@ -1,5 +1,6 @@
 #ifndef SPIGOT_H
 #define SPIGOT_H
+#include <runt.h>
 
 typedef struct spigot_pbrain spigot_pbrain;
 
@@ -57,5 +58,10 @@ void spigot_pbrain_string(spigot_state *state, const char *str);
 void spigot_draw_box(spigot_graphics *gfx, spigot_color *clr, int pos);
 void spigot_draw_bitmap(spigot_graphics *gfx, spigot_color *clr, 
         int x_pos, int y_pos, int w, int h, const unsigned char *glyph);
+
+void spigot_load(plumber_data *pd, runt_vm *vm, 
+        spigot_state **state, const char *filename);
+
+void spigot_pbrain_bind(plumber_data *pd, spigot_state *state, const char *var);
 
 #endif

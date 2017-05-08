@@ -35,7 +35,6 @@ struct spigot_pbrain {
     int play;
     int prev;
     SPFLOAT *out;
-    const char *pstr;
 };
 
 static void e(spigot_pbrain *spb, int i){
@@ -73,7 +72,6 @@ static void spigot_reset(void *ud)
 
 static void init(spigot_pbrain *spb)
 {
-    unsigned int len;
     memset(spb->s, 0, sizeof(int) * SIZE);
     memset(spb->t, 0, sizeof(int) * SIZE);
     memset(spb->code, 0, sizeof(char) * SIZE);
@@ -83,9 +81,6 @@ static void init(spigot_pbrain *spb)
     length = fread(code, 1, SIZE, input);
     fclose(input);
     */
-    len = strlen(spb->pstr);
-    strncpy(spb->code, spb->pstr, len);
-    spb->length = len;
     spigot_reset((void *)spb);
     for(spb->q=0;spb->q<spb->length;spb->q++){
         switch(spb->code[spb->q]){
@@ -102,6 +97,7 @@ static void init(spigot_pbrain *spb)
     }
     if(spb->sp) e(spb, spb->code[spb->s[--spb->sp]]=='['?4:6);
     for(spb->q=0;spb->q<=USHRT_MAX;spb->q++) spb->ptable[spb->q]=-1;
+    spb->q =0;
 }
 
 static int step(spigot_pbrain *spb)
@@ -131,7 +127,10 @@ static void spigot_step(void *ud)
 
     s = -1;
     spb = ud;
-    if(spb->play == 0) return;
+    if(spb->play == 0) {
+        *spb->out = 0;
+        return;
+    }
 
     while(s == -1) {
         if(spb->q >= spb->length) {
@@ -143,12 +142,6 @@ static void spigot_step(void *ud)
         spb->q++;
     }
     *spb->out = s;
-}
-
-static int spigot_constant(spigot_pbrain *spb, unsigned short val)
-{
-    spb->in = val;
-    return 0;
 }
 
 char * spigot_get_code(spigot_pbrain *spb)
@@ -326,7 +319,6 @@ static void spigot_pbrain_init(void *ud)
 {
     spigot_pbrain *spb;
     spb = ud;
-    init(spb);
     spb->q = 0;
 }
 
@@ -348,7 +340,8 @@ void spigot_pbrain_state(plumber_data *pd, spigot_state *state)
     spb = spigot_pbrain_new();
     state->ud = spb;
     
-    plumber_create_var(pd, "output", &spb->out);
+    init(spb);
+    spb->q = 0;
 }
 
 void spigot_pbrain_string(spigot_state *state, const char *str)
@@ -356,5 +349,13 @@ void spigot_pbrain_string(spigot_state *state, const char *str)
     spigot_pbrain *spb;
 
     spb = state->ud;
-    spb->pstr = str;
+    spb->length = strlen(str);
+    strncpy(spb->code, str, spb->length);
+}
+
+void spigot_pbrain_bind(plumber_data *pd, spigot_state *state, const char *var)
+{
+    spigot_pbrain *spb;
+    spb = state->ud;
+    plumber_create_var(pd, var, &spb->out);
 }
