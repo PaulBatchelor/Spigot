@@ -87,10 +87,12 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             stuff->load = sporth_stack_pop_float(stack);
             sporth_stack_pop_float(stack);
             stuff->state->init(stuff->state->ud);
+
             if(stuff->load != 0) {
                 spigot_gfx_init(stuff->gfx);
                 spigot_start(stuff->gfx);
             }
+
             break;
 
         case PLUMBER_COMPUTE:

@@ -74,7 +74,6 @@ static void init(spigot_pbrain *spb)
 {
     memset(spb->s, 0, sizeof(int) * SIZE);
     memset(spb->t, 0, sizeof(int) * SIZE);
-    memset(spb->code, 0, sizeof(char) * SIZE);
     memset(spb->ptable, 0, sizeof(int) * (USHRT_MAX + 1));
     /*
     if(!(input = fopen(f=filename, "r"))) e(8);
@@ -97,7 +96,6 @@ static void init(spigot_pbrain *spb)
     }
     if(spb->sp) e(spb, spb->code[spb->s[--spb->sp]]=='['?4:6);
     for(spb->q=0;spb->q<=USHRT_MAX;spb->q++) spb->ptable[spb->q]=-1;
-    spb->q =0;
 }
 
 static int step(spigot_pbrain *spb)
@@ -317,8 +315,8 @@ static void parse_code(spigot_graphics *gfx, void *ud)
 
 static void spigot_pbrain_init(void *ud)
 {
-    spigot_pbrain *spb;
-    spb = ud;
+    spigot_pbrain *spb = ud;
+
     spb->q = 0;
 }
 
@@ -339,9 +337,6 @@ void spigot_pbrain_state(plumber_data *pd, spigot_state *state)
 
     spb = spigot_pbrain_new();
     state->ud = spb;
-    
-    init(spb);
-    spb->q = 0;
 }
 
 void spigot_pbrain_string(spigot_state *state, const char *str)
@@ -350,7 +345,9 @@ void spigot_pbrain_string(spigot_state *state, const char *str)
 
     spb = state->ud;
     spb->length = strlen(str);
+    memset(spb->code, 0, sizeof(char) * SIZE);
     strncpy(spb->code, str, spb->length);
+    init(spb);
 }
 
 void spigot_pbrain_bind(plumber_data *pd, spigot_state *state, const char *var)
