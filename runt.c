@@ -4,7 +4,7 @@
 
 typedef struct {
     plumber_data *pd;
-    spigot_state state;
+    spigot_state *state;
 } runt_spigot_data;
 
 static runt_int rproc_pbrain(runt_vm *vm, runt_ptr p)
@@ -19,7 +19,6 @@ static runt_int rproc_pbrain(runt_vm *vm, runt_ptr p)
 
     rsd = runt_to_cptr(p);
     pd = rsd->pd;
-    state = &rsd->state;
 
     rc = runt_ppop(vm, &s);
     RUNT_ERROR_CHECK(rc);
@@ -28,8 +27,11 @@ static runt_int rproc_pbrain(runt_vm *vm, runt_ptr p)
     rc = runt_ppop(vm, &s);
     RUNT_ERROR_CHECK(rc);
     code = runt_to_string(s->p);
+    
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    state = runt_to_cptr(s->p);
 
-    spigot_state_init(state);
     spigot_pbrain_state(pd, state);
     spigot_pbrain_string(state, code);
     spigot_pbrain_bind(pd, state, var);
@@ -39,8 +41,56 @@ static runt_int rproc_pbrain(runt_vm *vm, runt_ptr p)
     return RUNT_OK;
 }
 
+/* TODO */
+static runt_int rproc_pbrain_input(runt_vm *vm, runt_ptr p)
+{
+    runt_uint rc;
+    runt_stacklet *s;
+    runt_uint id;
+    spigot_state *state;
+
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    state = runt_to_cptr(s->p);
+    
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    id = s->f;
+
+    return RUNT_OK;
+}
+
 static runt_int rproc_state(runt_vm *vm, runt_ptr p)
 {
+    runt_uint rc;
+    runt_stacklet *s;
+    spigot_state *state;
+    runt_spigot_data *rsd;
+
+    rsd = runt_to_cptr(p);
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    state = runt_to_cptr(s->p);
+    rsd->state = state;
+    return RUNT_OK;
+}
+
+static runt_int rproc_newstate(runt_vm *vm, runt_ptr p)
+{
+    runt_uint rc;
+    runt_stacklet *s;
+    spigot_state *state;
+
+    rc = runt_ppush(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    
+    runt_malloc(vm, sizeof(spigot_state), (void **)&state);
+    /* make sure pool doesn't release the memory */
+    spigot_state_init(state);
+    runt_mark_set(vm);
+    state->magic=666;
+    s->p = runt_mk_cptr(vm, state);
+
     return RUNT_OK;
 }
 
@@ -62,16 +112,19 @@ void spigot_load(plumber_data *pd, runt_vm *vm,
     runt_ptr p;
 
     runt_malloc(vm, sizeof(runt_spigot_data), (void **)&rsd);
-    *state = &rsd->state;
     rsd->pd = pd;
     p = runt_mk_cptr(vm, rsd);
 
     runt_mark_set(vm);
     runt_load_stdlib(vm);
     spigot_word_define(vm, "pbrain", 6, rproc_pbrain, p);
+    spigot_word_define(vm, "pbrain_input", 12, rproc_pbrain_input, p);
     spigot_word_define(vm, "spigot_state", 12, rproc_state, p);
+    spigot_word_define(vm, "new_state", 9, rproc_newstate, p);
 
     runt_mark_set(vm);
     runt_set_state(vm, RUNT_MODE_INTERACTIVE, RUNT_ON);
     runt_parse_file(vm, filename);
+    
+    *state = rsd->state;
 }

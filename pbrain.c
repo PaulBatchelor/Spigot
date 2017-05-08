@@ -35,6 +35,7 @@ struct spigot_pbrain {
     int play;
     int prev;
     SPFLOAT *out;
+    runt_uint fid;
 };
 
 static void e(spigot_pbrain *spb, int i){
@@ -336,6 +337,7 @@ void spigot_pbrain_state(plumber_data *pd, spigot_state *state)
     state->init = spigot_pbrain_init;
 
     spb = spigot_pbrain_new();
+    spb->fid = 0;
     state->ud = spb;
 }
 
@@ -355,4 +357,11 @@ void spigot_pbrain_bind(plumber_data *pd, spigot_state *state, const char *var)
     spigot_pbrain *spb;
     spb = state->ud;
     plumber_create_var(pd, var, &spb->out);
+}
+
+void spigot_pbrain_id(spigot_state *state, runt_uint id)
+{
+    spigot_pbrain *spb;
+    spb = state->ud;
+    spb->fid = id;
 }

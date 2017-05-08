@@ -25,6 +25,7 @@ typedef struct {
     spigot_drawfun draw;
     spigot_drawfun gfx_init;
     void *ud;
+    int magic;
 } spigot_state;
 
 typedef struct {
@@ -54,6 +55,7 @@ void spigot_gfx_set_state(spigot_graphics *gfx, spigot_state *state);
 
 void spigot_pbrain_state(plumber_data *pd, spigot_state *state);
 void spigot_pbrain_string(spigot_state *state, const char *str);
+void spigot_pbrain_id(spigot_state *state, runt_uint id);
 
 void spigot_draw_box(spigot_graphics *gfx, spigot_color *clr, int pos);
 void spigot_draw_bitmap(spigot_graphics *gfx, spigot_color *clr, 
