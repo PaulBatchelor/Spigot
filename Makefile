@@ -1,4 +1,4 @@
-OBJ=pbrain.o spigot.o graphics.o runt.o
+OBJ=pbrain.o spigot.o graphics.o runt.o tracker.o
 CFLAGS += -fPIC -g -ansi -Wall
 LIBS += -lsporth -lsoundpipe -lm -lsndfile -ldl -lglfw -lGL -lrunt
 

@@ -66,4 +66,8 @@ void spigot_load(plumber_data *pd, runt_vm *vm,
 
 void spigot_pbrain_bind(plumber_data *pd, spigot_state *state, const char *var);
 
+void spigot_tracker_state(plumber_data *pd, spigot_state *state);
+
+unsigned char * spigot_graphics_get_buf(spigot_graphics *gfx);
+
 #endif

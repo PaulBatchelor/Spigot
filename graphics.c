@@ -250,3 +250,8 @@ void spigot_gfx_set_state(spigot_graphics *gfx, spigot_state *state)
 {
     gfx->state = state;
 }
+
+unsigned char * spigot_graphics_get_buf(spigot_graphics *gfx)
+{
+    return gfx->buf;
+}
