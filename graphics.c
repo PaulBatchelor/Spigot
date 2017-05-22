@@ -99,7 +99,7 @@ static void init(void)
 
 static void errorcb(int error, const char* desc)
 {
-	printf("GLFW error %d: %s\n", error, desc);
+    printf("GLFW error %d: %s\n", error, desc);
 }
 
 static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -147,32 +147,32 @@ static void * run_loop(void *ud)
 
     int w, h;
 
-	if (!glfwInit()) {
-		printf("Failed to init GLFW.");
-		pthread_exit(NULL);
-	}
+    if (!glfwInit()) {
+        printf("Failed to init GLFW.");
+        pthread_exit(NULL);
+    }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
     spgt->window = glfwCreateWindow(193 * ZOOM, 193 * ZOOM, "spigot", NULL, NULL);
 
-	if (!spgt->window) {
-		glfwTerminate();
-		pthread_exit(NULL);
-	}
+    if (!spgt->window) {
+        glfwTerminate();
+        pthread_exit(NULL);
+    }
 
-	glfwSetKeyCallback(spgt->window, key);
-	glfwSetErrorCallback(errorcb);
-	glfwMakeContextCurrent(spgt->window);
+    glfwSetKeyCallback(spgt->window, key);
+    glfwSetErrorCallback(errorcb);
+    glfwMakeContextCurrent(spgt->window);
 
-	glfwSwapInterval(0);
-	glfwSetTime(0);
+    glfwSwapInterval(0);
+    glfwSetTime(0);
     init();
     glfwSetWindowUserPointer(spgt->window, spgt);
     while(spgt->run) {
         glfwPollEvents();
-		glfwGetFramebufferSize(spgt->window, &w, &h);
+        glfwGetFramebufferSize(spgt->window, &w, &h);
 
         glViewport(0, 0, (GLsizei) w, (GLsizei) h); 
         /* glViewport(w, h, (GLsizei) w, (GLsizei) h); */
@@ -191,7 +191,7 @@ static void * run_loop(void *ud)
     }
 
 
-	glfwTerminate();
+    glfwTerminate();
     pthread_exit(0);
     return NULL;
 }
