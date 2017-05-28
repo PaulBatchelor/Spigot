@@ -75,6 +75,9 @@ void spigot_draw_glyph(spigot_graphics *gfx, spigot_color *clr,
 
 void spigot_draw_fill(spigot_graphics *gfx, spigot_color *clr); 
 
+void spigot_draw_rect(spigot_graphics *gfx, spigot_color *clr,
+        int pos_x, int pos_y, int w, int h); 
+
 
 void spigot_load(plumber_data *pd, runt_vm *vm, 
         spigot_state **state, const char *filename);

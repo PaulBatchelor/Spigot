@@ -326,18 +326,36 @@ void spigot_draw_glyph(spigot_graphics *gfx, spigot_color *clr,
 
 void spigot_draw_fill(spigot_graphics *gfx, spigot_color *clr)
 {
-   unsigned char *buf;
-   unsigned int pos;
-   unsigned int x, y;
+    unsigned char *buf;
+    unsigned int pos;
+    unsigned int x, y;
 
-   buf = spigot_graphics_get_buf(gfx);
+    buf = spigot_graphics_get_buf(gfx);
 
-   for(y = 0; y < 193; y++) {
+    for(y = 0; y < 193; y++) {
        for(x = 0; x < 193; x++) {
             pos = y * 193 * 3 + x * 3;
             buf[pos] = clr->r;
             buf[pos + 1] = clr->g;
             buf[pos + 2] = clr->b;
        }
-   }
+    }
+}
+
+void spigot_draw_rect(spigot_graphics *gfx, spigot_color *clr,
+        int pos_x, int pos_y, int w, int h)
+{
+    int x, y;
+    int pos;
+    unsigned char *buf;
+    buf = spigot_graphics_get_buf(gfx);
+
+    for(y = 0; y < h; y++) {
+        for(x = 0; x < w; x++) {
+            pos = (pos_y + y) * 193 * 3 + (pos_x + x) * 3;
+            buf[pos] = clr->r;        
+            buf[pos + 1] = clr->g;
+            buf[pos + 2] = clr->b;
+        }
+    }
 }

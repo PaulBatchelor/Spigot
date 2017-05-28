@@ -115,6 +115,15 @@ static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
 
     spigot_draw_fill(gfx, &t->background);
 
+    /* draw dark row lines */
+
+    for(i = 0; i < 10; i++) {
+        spigot_draw_rect(gfx, &t->shade, 16, 16 + 16 * i, 160, 8);
+    }
+      
+    /* draw row selected (temporary: for demo purposes) */
+    spigot_draw_rect(gfx, &t->row_selected, 16, 24, 160, 8);
+
     /* draw border */
     spigot_draw_hline(gfx, &t->foreground, 0, 0, 193);
     spigot_draw_hline(gfx, &t->foreground, 192, 0, 193);
