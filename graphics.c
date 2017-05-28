@@ -266,13 +266,36 @@ unsigned char * spigot_graphics_get_buf(spigot_graphics *gfx)
 void spigot_draw_hline(spigot_graphics *gfx, 
         spigot_color *clr, int pos, int start, int len)
 {
+    int p;
+    int off;
+    unsigned char *buf;
 
+    buf = spigot_graphics_get_buf(gfx);
+
+    for(p = 0; p < len; p++) {
+        off = (p + start) * 3 + pos * 193 * 3;
+        buf[off] = clr->r;
+        buf[off + 1] = clr->g;
+        buf[off + 2] = clr->b;
+    }
+    
 }
 
 void spigot_draw_vline(spigot_graphics *gfx, 
         spigot_color *clr, int pos, int start, int len)
 {
+    int p;
+    int off;
+    unsigned char *buf;
 
+    buf = spigot_graphics_get_buf(gfx);
+
+    for(p = 0; p < len; p++) {
+        off = (p + start) * 3 * 193 + pos * 3;
+        buf[off] = clr->r;
+        buf[off + 1] = clr->g;
+        buf[off + 2] = clr->b;
+    }
 }
 
 void spigot_draw_glyph(spigot_graphics *gfx, spigot_color *clr, 

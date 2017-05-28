@@ -27,6 +27,12 @@ static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
    spigot_color_rgb(&t->text_selected, 255, 255, 255);
 
    spigot_draw_fill(gfx, &t->background);
+
+   /* draw border */
+   spigot_draw_hline(gfx, &t->foreground, 0, 0, 193);
+   spigot_draw_hline(gfx, &t->foreground, 192, 0, 193);
+   spigot_draw_vline(gfx, &t->foreground, 0, 0, 193);
+   spigot_draw_vline(gfx, &t->foreground, 192, 0, 193);
 }
 
 static void spigot_tracker_free(void *ud)
