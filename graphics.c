@@ -13,7 +13,7 @@
 #include "box.h"
 
 #define WIDTH 193
-#define ZOOM 4
+#define ZOOM 1
 
 struct spigot_graphics {
     int run;
@@ -285,7 +285,7 @@ void spigot_draw_vline(spigot_graphics *gfx,
         spigot_color *clr, int pos, int start, int len)
 {
     int p;
-    int off;
+    unsigned int off;
     unsigned char *buf;
 
     buf = spigot_graphics_get_buf(gfx);
@@ -299,9 +299,29 @@ void spigot_draw_vline(spigot_graphics *gfx,
 }
 
 void spigot_draw_glyph(spigot_graphics *gfx, spigot_color *clr, 
-        int x_pos, int y_pos, int w, int h, const unsigned char *glyph)
+        int x_pos, int y_pos, 
+        int w, int h, 
+        int stride,
+        const unsigned char *glyph)
 {
+    unsigned int glyph_pos;
+    unsigned int img_pos;
+    unsigned int x, y;
+    unsigned char *buf;
+    
+    buf = spigot_graphics_get_buf(gfx);
 
+    for(y = 0; y < h; y++) {
+        for(x = 0; x < w; x++) {
+            glyph_pos =  (y*stride) + x;
+            if(glyph[glyph_pos]) {
+                img_pos = ((y + y_pos)*193*3) + (x + x_pos)*3;
+                buf[img_pos] = clr->r;
+                buf[img_pos + 1] = clr->g;
+                buf[img_pos + 2] = clr->b;
+            } 
+        }
+    }
 }
 
 void spigot_draw_fill(spigot_graphics *gfx, spigot_color *clr)
