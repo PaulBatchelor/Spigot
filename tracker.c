@@ -84,6 +84,22 @@ static void draw_arrow_down(spigot_graphics *gfx,
             tracker_assets + 8 * IMG_TRACKER_ASSETS_WIDTH + 14 * 8);
 }
 
+static void draw_number(spigot_graphics *gfx, spigot_color *clr,
+        int x, int y, int n) {
+
+        spigot_draw_glyph(gfx, clr, 
+                x, y, 
+                4, 5, 
+                IMG_TRACKER_ASSETS_WIDTH,
+                tracker_assets + 4 * (n / 10));
+
+        spigot_draw_glyph(gfx, clr, 
+                x + 4, y, 
+                4, 5, 
+                IMG_TRACKER_ASSETS_WIDTH,
+                tracker_assets + 4 * (n % 10));
+}
+
 static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
 {
     int i;
@@ -169,6 +185,12 @@ static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
     
     draw_arrow_up(gfx, &t->foreground, 22 * 8, 2 * 8);
     draw_arrow_down(gfx, &t->foreground, 22 * 8, 19 * 8);
+
+    /* draw row numbers */
+    for(i = 0; i < 19; i++) {
+        draw_number(gfx, &t->foreground, 5, 18 + 8 * i, i); 
+    }
+
 }
 
 static void spigot_tracker_free(void *ud)

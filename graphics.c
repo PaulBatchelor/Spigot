@@ -13,7 +13,7 @@
 #include "box.h"
 
 #define WIDTH 193
-#define ZOOM 1
+#define ZOOM 4
 
 struct spigot_graphics {
     int run;
