@@ -24,7 +24,14 @@ struct spigot_graphics {
     spigot_state *state;
 };
 
-void spigot_color_rgb(spigot_color *clr, long rgb)
+void spigot_color_rgb(spigot_color *clr, uint8_t r, uint8_t g, uint8_t b)
+{
+    clr->r = r;
+    clr->g = g;
+    clr->b = b;
+}
+
+void spigot_color_rgb_hex(spigot_color *clr, long rgb)
 {
     clr->r = (rgb & 0xff0000) >> 16;
     clr->g = (rgb & 0x00ff00) >> 8;
@@ -215,7 +222,7 @@ void spigot_gfx_init(spigot_graphics *gfx)
     int i;
     spigot_color clr;
     spigot_state *state;
-    spigot_color_rgb(&clr, 0x000000);
+    spigot_color_rgb_hex(&clr, 0x000000);
     state = gfx->state;
     for(i = 0; i < 193 * 193 * 3; i+=3) {
         gfx->buf[i] = clr.r;
@@ -272,4 +279,22 @@ void spigot_draw_glyph(spigot_graphics *gfx, spigot_color *clr,
         int x_pos, int y_pos, int w, int h, const unsigned char *glyph)
 {
 
+}
+
+void spigot_draw_fill(spigot_graphics *gfx, spigot_color *clr)
+{
+   unsigned char *buf;
+   unsigned int pos;
+   unsigned int x, y;
+
+   buf = spigot_graphics_get_buf(gfx);
+
+   for(y = 0; y < 193; y++) {
+       for(x = 0; x < 193; x++) {
+            pos = y * 193 * 3 + x * 3;
+            buf[pos] = clr->r;
+            buf[pos + 1] = clr->g;
+            buf[pos + 2] = clr->b;
+       }
+   }
 }

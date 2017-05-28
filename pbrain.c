@@ -245,8 +245,8 @@ static void pbrain_draw(spigot_graphics *gfx, void *ud)
 
     pos = spigot_get_pos(pbrain);
 
-    spigot_color_rgb(&fg, 0x84de02);
-    spigot_color_rgb(&bg, 0x000000);
+    spigot_color_rgb_hex(&fg, 0x84de02);
+    spigot_color_rgb_hex(&bg, 0x000000);
 
     spigot_draw_box(gfx, &bg, pbrain->prev);
     spigot_draw_box(gfx, &fg, pos);
@@ -272,7 +272,7 @@ static void parse_code(spigot_graphics *gfx, void *ud)
     s = 0;
     off = 0;
 
-    spigot_color_rgb(&clr, 0x84de02);
+    spigot_color_rgb_hex(&clr, 0x84de02);
     while(s < len) {
         switch(code[s]) {
             case '+':
@@ -332,7 +332,7 @@ void spigot_pbrain_state(plumber_data *pd, spigot_state *state)
     state->reset = spigot_reset;
     state->draw = pbrain_draw;
     state->gfx_init = parse_code;
-    state->free = free;
+    state->free = spigot_pbrain_free;
     state->step = spigot_step;
     state->init = spigot_pbrain_init;
 

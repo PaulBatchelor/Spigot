@@ -117,6 +117,7 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             stuff->state->free(stuff->state->ud);
             free(stuff->mem);
             free(stuff->cells);
+            free(stuff);
             break;
     }
     return PLUMBER_OK;

@@ -1,6 +1,8 @@
 OBJ=pbrain.o spigot.o graphics.o runt.o tracker.o
-CFLAGS += -fPIC -g -ansi -Wall
+CFLAGS += -fPIC -g -ansi -Wall 
+CFLAGS += -I$(HOME)/.runt/include
 LIBS += -lsporth -lsoundpipe -lm -lsndfile -ldl -lglfw -lGL -lrunt
+LIBS += -L$(HOME)/.runt/lib
 
 CONFIG ?=
 

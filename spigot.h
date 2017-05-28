@@ -32,7 +32,8 @@ typedef struct {
     char r, g, b;
 } spigot_color;
 
-void spigot_color_rgb(spigot_color *clr, long rgb);
+void spigot_color_rgb_hex(spigot_color *clr, long rgb);
+void spigot_color_rgb(spigot_color *clr, uint8_t r, uint8_t g, uint8_t b);
 
 char * spigot_get_code(spigot_pbrain *spb);
 int spigot_get_length(spigot_pbrain *spb);
@@ -67,6 +68,8 @@ void spigot_draw_vline(spigot_graphics *gfx,
         spigot_color *clr, int pos, int start, int len);
 void spigot_draw_glyph(spigot_graphics *gfx, spigot_color *clr, 
         int x_pos, int y_pos, int w, int h, const unsigned char *glyph);
+
+void spigot_draw_fill(spigot_graphics *gfx, spigot_color *clr); 
 
 
 void spigot_load(plumber_data *pd, runt_vm *vm, 
