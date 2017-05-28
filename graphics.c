@@ -255,3 +255,21 @@ unsigned char * spigot_graphics_get_buf(spigot_graphics *gfx)
 {
     return gfx->buf;
 }
+
+void spigot_draw_hline(spigot_graphics *gfx, 
+        spigot_color *clr, int pos, int start, int len)
+{
+
+}
+
+void spigot_draw_vline(spigot_graphics *gfx, 
+        spigot_color *clr, int pos, int start, int len)
+{
+
+}
+
+void spigot_draw_glyph(spigot_graphics *gfx, spigot_color *clr, 
+        int x_pos, int y_pos, int w, int h, const unsigned char *glyph)
+{
+
+}

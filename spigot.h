@@ -61,6 +61,14 @@ void spigot_draw_box(spigot_graphics *gfx, spigot_color *clr, int pos);
 void spigot_draw_bitmap(spigot_graphics *gfx, spigot_color *clr, 
         int x_pos, int y_pos, int w, int h, const unsigned char *glyph);
 
+void spigot_draw_hline(spigot_graphics *gfx, 
+        spigot_color *clr, int pos, int start, int len);
+void spigot_draw_vline(spigot_graphics *gfx, 
+        spigot_color *clr, int pos, int start, int len);
+void spigot_draw_glyph(spigot_graphics *gfx, spigot_color *clr, 
+        int x_pos, int y_pos, int w, int h, const unsigned char *glyph);
+
+
 void spigot_load(plumber_data *pd, runt_vm *vm, 
         spigot_state **state, const char *filename);
 
