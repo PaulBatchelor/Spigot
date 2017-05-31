@@ -100,6 +100,44 @@ static void draw_number(spigot_graphics *gfx, spigot_color *clr,
                 tracker_assets + 4 * (n % 10));
 }
 
+static void draw_note(spigot_graphics *gfx, spigot_color *clr, 
+        int chan, int pos,
+        int note,
+        int op,
+        int oct) {
+
+        int x, y;
+
+        int note_off;
+        int op_off;
+        int oct_off;
+
+        x = 25 + 32 * chan;
+        y = 18 + 8 * pos;
+
+        note_off = 64 + 4 * note;
+        op_off = 48 + op * 5;
+        oct_off = oct * 4;
+
+        spigot_draw_glyph(gfx, clr, 
+                x, y, 
+                4, 5, 
+                IMG_TRACKER_ASSETS_WIDTH,
+                tracker_assets + note_off);
+        
+        spigot_draw_glyph(gfx, clr, 
+                x + 4, y, 
+                5, 5, 
+                IMG_TRACKER_ASSETS_WIDTH,
+                tracker_assets + op_off);
+        
+        spigot_draw_glyph(gfx, clr, 
+                x + 10, y, 
+                4, 5, 
+                IMG_TRACKER_ASSETS_WIDTH,
+                tracker_assets + oct_off);
+}
+
 static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
 {
     int i;
@@ -199,6 +237,9 @@ static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
     for(i = 0; i < 19; i++) {
         draw_number(gfx, &t->foreground, 5, 18 + 8 * i, i); 
     }
+
+    /* draw note */
+    draw_note(gfx, &t->foreground, 1, 4, 0, 0, 0);
 
 }
 
