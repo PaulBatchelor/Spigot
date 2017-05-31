@@ -1,0 +1,8 @@
+[
+: code
+",[..-]+[.-],[><>.><<->,[.-.]<] ...  +[.,] +[>><<,] +[.] +[><.] >.+-<>+[.-,]"
+;
+: rand 10 rnd ;
+]
+
+new_state code "output" pbrain dup spigot_state _rand pbrain_input
