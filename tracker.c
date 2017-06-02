@@ -198,9 +198,69 @@ static void draw_note(spigot_graphics *gfx, spigot_color *clr,
 
 static void note_to_args(tracker_note *note, int *n, int *op, int *oct)
 {
-    *n = -1;
+    int step;
+
+    if(note->note < 0) {
+        *n = -1;
+        *op = 0;
+        *oct = 0;
+    }
+
+    step = note->note % 12;
+    *oct = (note->note / 12) - 1;
     *op = 0;
-    *oct = 4;
+
+    switch(step) {
+        case 0: /* C */
+            *n = 2;
+            *op = 2;
+            break;
+        case 1: /* C# */
+            *n = 2;
+            *op = 0;
+            break;
+        case 2: /* D */
+            *n = 3;
+            *op = 2;
+            break;
+        case 3: /* D# */
+            *n = 3;
+            *op = 0;
+            break;
+        case 4: /* E */
+            *n = 4;
+            *op = 2;
+            break;
+        case 5: /* F */
+            *n = 5;
+            *op = 2;
+            break; 
+        case 6: /* F# */
+            *n = 5;
+            *op = 0;
+            break;
+        case 7: /* G */
+            *n = 6;
+            *op = 2;
+            break;
+        case 8: /* G# */
+            *n = 6;
+            *op = 0;
+            break;
+        case 9: /* A */
+            *n = 0;
+            *op = 2;
+            break;
+        case 10: /* A# */
+            *n = 0;
+            *op = 0;
+            break;
+        case 11: /* B */
+            *n = 1;
+            *op = 2;
+            break;
+    }
+
 }
 
 static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
@@ -311,6 +371,7 @@ static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
 
     /* draw notes */
 
+    t->pages[0].notes[0].note = 71;
     pg = &t->pages[0];
     pos = 0;
     for(chan = 0; chan < NCHAN; chan++) {
