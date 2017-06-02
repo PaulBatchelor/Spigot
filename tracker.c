@@ -5,6 +5,21 @@
 #include "spigot.h"
 #include "tracker_assets.h"
 
+#define PATSIZE 64
+#define NCHAN 5
+#define MAX_SEQUENCES 64
+#define MAX_PAGES 64 
+#define NROWS 19
+
+typedef struct {
+    int note;
+    int op;
+} tracker_note;
+
+typedef struct {
+    tracker_note notes[PATSIZE * NCHAN];
+} tracker_page; 
+
 typedef struct {
     spigot_color background;
     spigot_color foreground;
@@ -12,8 +27,43 @@ typedef struct {
     spigot_color row_selected;
     spigot_color text_selected;
     spigot_color column_selected;
+
+    tracker_page pages[MAX_PAGES];
+    int seq[MAX_SEQUENCES];
 } spigot_tracker;
 
+static void init_note(tracker_note *note)
+{
+    note->note = -1;
+    note->op = 0;
+}
+
+static void init_page(tracker_page *page)
+{
+    int i;
+
+    for(i = 0; i < PATSIZE * NCHAN; i++) {
+        init_note(&page->notes[i]);
+    }
+}
+
+static void init_sequence_data(spigot_tracker *st)
+{
+    int i;
+
+    for(i = 0; i < MAX_PAGES; i++) {
+        init_page(&st->pages[i]);
+    }
+}
+
+static void init_tracker(void *ud)
+{
+    spigot_tracker *st;
+
+    st = ud;
+
+    init_sequence_data(st);
+}
 
 static void draw_square_open(spigot_graphics *gfx, 
         spigot_color *c, int x, int y)
@@ -111,37 +161,58 @@ static void draw_note(spigot_graphics *gfx, spigot_color *clr,
         int note_off;
         int op_off;
         int oct_off;
-
-        x = 25 + 32 * chan;
+        x = 26 + 32 * chan;
         y = 18 + 8 * pos;
 
-        note_off = 64 + 4 * note;
-        op_off = 48 + op * 5;
-        oct_off = oct * 4;
+        if(note >= 0) {
 
-        spigot_draw_glyph(gfx, clr, 
-                x, y, 
-                4, 5, 
-                IMG_TRACKER_ASSETS_WIDTH,
-                tracker_assets + note_off);
-        
-        spigot_draw_glyph(gfx, clr, 
-                x + 4, y, 
-                5, 5, 
-                IMG_TRACKER_ASSETS_WIDTH,
-                tracker_assets + op_off);
-        
-        spigot_draw_glyph(gfx, clr, 
-                x + 10, y, 
-                4, 5, 
-                IMG_TRACKER_ASSETS_WIDTH,
-                tracker_assets + oct_off);
+            note_off = 64 + 4 * note;
+            op_off = 48 + op * 5;
+            oct_off = oct * 4;
+
+            spigot_draw_glyph(gfx, clr, 
+                    x, y, 
+                    4, 5, 
+                    IMG_TRACKER_ASSETS_WIDTH,
+                    tracker_assets + note_off);
+            
+            spigot_draw_glyph(gfx, clr, 
+                    x + 4, y, 
+                    5, 5, 
+                    IMG_TRACKER_ASSETS_WIDTH,
+                    tracker_assets + op_off);
+            
+            spigot_draw_glyph(gfx, clr, 
+                    x + 10, y, 
+                    4, 5, 
+                    IMG_TRACKER_ASSETS_WIDTH,
+                    tracker_assets + oct_off);
+        } else {
+            spigot_draw_glyph(gfx, clr, 
+                    x - 3, y - 1, 
+                    19, 5, 
+                    IMG_TRACKER_ASSETS_WIDTH,
+                    tracker_assets + 12 * 8);
+        }
+}
+
+static void note_to_args(tracker_note *note, int *n, int *op, int *oct)
+{
+    *n = -1;
+    *op = 0;
+    *oct = 4;
 }
 
 static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
 {
     int i;
+    int chan;
     spigot_tracker *t;
+    tracker_note *nt;
+    tracker_page *pg;
+    int pos;
+    int n, op, oct;
+
 
     t = ud;
 
@@ -238,8 +309,18 @@ static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
         draw_number(gfx, &t->foreground, 5, 18 + 8 * i, i); 
     }
 
-    /* draw note */
-    draw_note(gfx, &t->foreground, 1, 4, 0, 0, 0);
+    /* draw notes */
+
+    pg = &t->pages[0];
+    pos = 0;
+    for(chan = 0; chan < NCHAN; chan++) {
+        for(i = 0; i < NROWS; i++) {
+            nt = &pg->notes[pos];
+            note_to_args(nt, &n, &op, &oct);
+            draw_note(gfx, &t->foreground, chan, i, n, op, oct);
+            pos++;
+        }
+    }
 
 }
 
@@ -254,5 +335,6 @@ void spigot_tracker_state(plumber_data *pd, spigot_state *state)
 {
     state->gfx_init = init_tracker_gfx;
     state->free = spigot_tracker_free;
+    state->init = init_tracker;
     state->ud = malloc(sizeof(spigot_tracker));
 }
