@@ -30,6 +30,7 @@ typedef struct {
 
     tracker_page pages[MAX_PAGES];
     int seq[MAX_SEQUENCES];
+    int offset;
 } spigot_tracker;
 
 static void init_note(tracker_note *note)
@@ -61,8 +62,10 @@ static void init_tracker(void *ud)
     spigot_tracker *st;
 
     st = ud;
-
     init_sequence_data(st);
+
+    /* page offset (used in drawing) */
+    st->offset = 0;
 }
 
 static void draw_square_open(spigot_graphics *gfx, 
@@ -154,7 +157,8 @@ static void draw_note(spigot_graphics *gfx, spigot_color *clr,
         int chan, int pos,
         int note,
         int op,
-        int oct) {
+        int oct,
+        int off) {
 
         int x, y;
 
@@ -162,7 +166,7 @@ static void draw_note(spigot_graphics *gfx, spigot_color *clr,
         int op_off;
         int oct_off;
         x = 26 + 32 * chan;
-        y = 18 + 8 * pos;
+        y = 18 + 8 * (pos - off);
 
         if(note >= 0) {
 
@@ -263,15 +267,45 @@ static void note_to_args(tracker_note *note, int *n, int *op, int *oct)
 
 }
 
-static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
+static void draw_page(spigot_graphics *gfx, spigot_tracker *t)
 {
-    int i;
-    int chan;
-    spigot_tracker *t;
     tracker_note *nt;
     tracker_page *pg;
     int pos;
     int n, op, oct;
+    int row;
+    int chan;
+    int row_min;
+    int row_max;
+
+    pg = &t->pages[0];
+    pos = 0;
+
+    row_min = t->offset;
+    row_max = t->offset + NROWS; 
+    for(chan = 0; chan < NCHAN; chan++) {
+        for(row = row_min; row < row_max; row++) {
+            pos = chan * PATSIZE + row;
+            nt = &pg->notes[pos];
+            note_to_args(nt, &n, &op, &oct);
+            draw_note(gfx, &t->foreground, chan, row, n, op, oct, t->offset);
+        }
+    }
+}
+
+static void draw_row_numbers(spigot_graphics *gfx, spigot_tracker *t)
+{
+    int i;
+    for(i = 0; i < 19; i++) {
+        draw_number(gfx, &t->foreground, 5, 18 + 8 * i, i + t->offset); 
+    }
+}
+
+
+static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
+{
+    int i;
+    spigot_tracker *t;
 
 
     t = ud;
@@ -353,6 +387,8 @@ static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
         spigot_draw_vline(gfx, &t->foreground, 16 + 16 * i, 22 * 8, 16);
     }
 
+    draw_row_numbers(gfx, t);
+
     /* draw scroll bar dividers */
     spigot_draw_hline(gfx, &t->foreground, 32, 22 * 8, 16);
     spigot_draw_hline(gfx, &t->foreground, 19 * 8, 22 * 8, 16);
@@ -364,25 +400,8 @@ static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
     draw_arrow_up(gfx, &t->foreground, 22 * 8, 2 * 8);
     draw_arrow_down(gfx, &t->foreground, 22 * 8, 19 * 8);
 
-    /* draw row numbers */
-    for(i = 0; i < 19; i++) {
-        draw_number(gfx, &t->foreground, 5, 18 + 8 * i, i); 
-    }
-
-    /* draw notes */
-
-    t->pages[0].notes[0].note = 71;
-    pg = &t->pages[0];
-    pos = 0;
-    for(chan = 0; chan < NCHAN; chan++) {
-        for(i = 0; i < NROWS; i++) {
-            nt = &pg->notes[pos];
-            note_to_args(nt, &n, &op, &oct);
-            draw_note(gfx, &t->foreground, chan, i, n, op, oct);
-            pos++;
-        }
-    }
-
+    t->pages[0].notes[1].note = 71;
+    draw_page(gfx, t);
 }
 
 static void spigot_tracker_free(void *ud)
