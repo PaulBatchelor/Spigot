@@ -33,6 +33,8 @@ typedef struct {
     int offset;
     int chan;
     int page;
+    int row;
+    int column;
 } spigot_tracker;
 
 static void init_note(tracker_note *note)
@@ -69,6 +71,8 @@ static void init_tracker(void *ud)
     st->offset = 0;
     st->chan = 0;
     st->page = 0;
+    st->row = 0;
+    st->column = 0;
 }
 
 static void insert_note(spigot_tracker *t, int pos, int note)
@@ -309,29 +313,27 @@ static void draw_row_numbers(spigot_graphics *gfx, spigot_tracker *t)
 }
 
 
-static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
+static void draw_selected_row(spigot_graphics *gfx, spigot_tracker *t)
 {
-    int i;
+    spigot_draw_rect(gfx, &t->row_selected, 16, 16 + t->row * 8, 160, 8);
+}
+
+static void redraw(spigot_graphics *gfx, void *ud)
+{
     spigot_tracker *t;
-
+    int i;
+    
     t = ud;
-
-    spigot_color_rgb(&t->background, 130, 195, 255);
-    spigot_color_rgb(&t->foreground, 0, 65, 130);
-    spigot_color_rgb(&t->shade, 52, 158, 255);
-    spigot_color_rgb(&t->row_selected, 255, 119, 171);
-    spigot_color_rgb(&t->text_selected, 255, 255, 255);
-
+   
+    /* fill background */
     spigot_draw_fill(gfx, &t->background);
-
+   
     /* draw dark row lines */
 
     for(i = 0; i < 10; i++) {
         spigot_draw_rect(gfx, &t->shade, 16, 16 + 16 * i, 160, 8);
     }
-      
-    /* draw row selected (temporary: for demo purposes) */
-    spigot_draw_rect(gfx, &t->row_selected, 16, 24, 160, 8);
+    draw_selected_row(gfx, t);
 
     /* draw border */
     spigot_draw_hline(gfx, &t->foreground, 0, 0, 193);
@@ -411,22 +413,26 @@ static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
     draw_page(gfx, t);
 }
 
+static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
+{
+    spigot_tracker *t;
+
+    t = ud;
+
+    spigot_color_rgb(&t->background, 130, 195, 255);
+    spigot_color_rgb(&t->foreground, 0, 65, 130);
+    spigot_color_rgb(&t->shade, 52, 158, 255);
+    spigot_color_rgb(&t->row_selected, 255, 119, 171);
+    spigot_color_rgb(&t->text_selected, 255, 255, 255);
+
+    redraw(gfx, t);
+}
+
 static void spigot_tracker_free(void *ud)
 {
     spigot_tracker *t;
     t = ud;
     free(t);
-}
-
-void spigot_tracker_state(plumber_data *pd, spigot_state *state)
-{
-    spigot_tracker *t;
-    state->gfx_init = init_tracker_gfx;
-    state->free = spigot_tracker_free;
-    state->init = init_tracker;
-    state->ud = malloc(sizeof(spigot_tracker));
-    t = state->ud;
-    init_sequence_data(t);
 }
 
 static int rproc_chan(runt_vm *vm, runt_ptr p)
@@ -450,6 +456,13 @@ static int rproc_chan(runt_vm *vm, runt_ptr p)
     t->chan = chan;
 
     return RUNT_OK;
+}
+
+static void tracker_step(void *ud)
+{
+    spigot_tracker *t;
+    t = ud;
+    t->row = (t->row + 1) % 19;
 }
 
 static int rproc_note(runt_vm *vm, runt_ptr p)
@@ -486,4 +499,17 @@ int spigot_tracker_runt(runt_vm *vm, runt_ptr p)
     spigot_word_define(vm, p, "tracker_note", 12, rproc_note);
     spigot_word_define(vm, p, "tracker_chan", 12, rproc_chan);
     return runt_is_alive(vm);
+}
+
+void spigot_tracker_state(plumber_data *pd, spigot_state *state)
+{
+    spigot_tracker *t;
+    state->gfx_init = init_tracker_gfx;
+    state->free = spigot_tracker_free;
+    state->init = init_tracker;
+    state->ud = malloc(sizeof(spigot_tracker));
+    state->draw = redraw;
+    state->step = tracker_step;
+    t = state->ud;
+    init_sequence_data(t);
 }
