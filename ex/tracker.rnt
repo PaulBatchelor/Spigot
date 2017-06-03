@@ -1,1 +1,5 @@
-new_state tracker spigot_state
+[
+: state ptr ;
+]
+
+new_state tracker dup setptr spigot_state

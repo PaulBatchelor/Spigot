@@ -31,6 +31,8 @@ typedef struct {
     tracker_page pages[MAX_PAGES];
     int seq[MAX_SEQUENCES];
     int offset;
+    int chan;
+    int page;
 } spigot_tracker;
 
 static void init_note(tracker_note *note)
@@ -66,6 +68,13 @@ static void init_tracker(void *ud)
 
     /* page offset (used in drawing) */
     st->offset = 0;
+    st->chan = 0;
+    st->page = 0;
+}
+
+static void insert_note(spigot_tracker *t, int pos, int note)
+{
+    t->pages[t->page].notes[pos + PATSIZE * t->chan].note = note;
 }
 
 static void draw_square_open(spigot_graphics *gfx, 
@@ -278,8 +287,7 @@ static void draw_page(spigot_graphics *gfx, spigot_tracker *t)
     int row_min;
     int row_max;
 
-    pg = &t->pages[0];
-    pos = 0;
+    pg = &t->pages[t->page];
 
     row_min = t->offset;
     row_max = t->offset + NROWS; 
@@ -306,7 +314,6 @@ static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
 {
     int i;
     spigot_tracker *t;
-
 
     t = ud;
 
@@ -400,7 +407,8 @@ static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
     draw_arrow_up(gfx, &t->foreground, 22 * 8, 2 * 8);
     draw_arrow_down(gfx, &t->foreground, 22 * 8, 19 * 8);
 
-    t->pages[0].notes[1].note = 71;
+    /* t->pages[0].notes[1].note = 71; */
+    insert_note(t, 9, 71);
     draw_page(gfx, t);
 }
 
@@ -417,4 +425,9 @@ void spigot_tracker_state(plumber_data *pd, spigot_state *state)
     state->free = spigot_tracker_free;
     state->init = init_tracker;
     state->ud = malloc(sizeof(spigot_tracker));
+}
+
+int spigot_tracker_runt(runt_vm *vm)
+{
+    return runt_is_alive(vm);
 }

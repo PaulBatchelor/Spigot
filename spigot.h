@@ -79,12 +79,13 @@ void spigot_draw_rect(spigot_graphics *gfx, spigot_color *clr,
         int pos_x, int pos_y, int w, int h); 
 
 
-void spigot_load(plumber_data *pd, runt_vm *vm, 
+int spigot_load(plumber_data *pd, runt_vm *vm, 
         spigot_state **state, const char *filename);
 
 void spigot_pbrain_bind(plumber_data *pd, spigot_state *state, const char *var);
 
 void spigot_tracker_state(plumber_data *pd, spigot_state *state);
+int spigot_tracker_runt(runt_vm *vm);
 
 unsigned char * spigot_graphics_get_buf(spigot_graphics *gfx);
 

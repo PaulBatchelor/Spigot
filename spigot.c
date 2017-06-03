@@ -50,6 +50,7 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
     const char *filename;
     SPFLOAT in;
     spigot_stuff *stuff;
+    int rc;
     switch(pd->mode) {
         case PLUMBER_CREATE:
             if(sporth_check_args(stack, "ffs") != SPORTH_OK) {
@@ -70,7 +71,7 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             runt_cell_pool_init(&stuff->vm);
             runt_memory_pool_set(&stuff->vm, stuff->mem, 5 * RUNT_MEGABYTE);
 
-            spigot_load(pd, &stuff->vm, &stuff->state, filename);
+            rc = spigot_load(pd, &stuff->vm, &stuff->state, filename);
 
             stuff->gfx = spigot_gfx_new();
 
@@ -78,6 +79,11 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
 
             *ud = stuff;
 
+            if(rc != PLUMBER_OK) {
+                plumber_print(pd, "Spigot: error reading file %s\n", filename);
+                stack->error++;
+                return PLUMBER_NOTOK;
+            }
 
 
             break;
@@ -114,7 +120,9 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
                 spigot_stop(stuff->gfx);
             }
             spigot_gfx_free(stuff->gfx);
-            stuff->state->free(stuff->state->ud);
+            if(runt_is_alive(&stuff->vm) == RUNT_OK) {
+                stuff->state->free(stuff->state->ud);
+            }
             free(stuff->mem);
             free(stuff->cells);
             free(stuff);

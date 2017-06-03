@@ -109,7 +109,7 @@ static void spigot_word_define(runt_vm *vm,
     runt_word_bind_ptr(vm, id, p);
 }
 
-void spigot_load(plumber_data *pd, runt_vm *vm, 
+int spigot_load(plumber_data *pd, runt_vm *vm, 
         spigot_state **state, const char *filename)
 {
     runt_spigot_data *rsd;
@@ -128,7 +128,12 @@ void spigot_load(plumber_data *pd, runt_vm *vm,
 
     runt_mark_set(vm);
     runt_set_state(vm, RUNT_MODE_INTERACTIVE, RUNT_ON);
-    runt_parse_file(vm, filename);
+    if(runt_parse_file(vm, filename) != RUNT_OK) {
+        runt_seppuku(vm);
+        return PLUMBER_NOTOK;
+    }
     
     *state = rsd->state;
+
+    return PLUMBER_OK;
 }
