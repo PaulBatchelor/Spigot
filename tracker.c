@@ -35,6 +35,7 @@ typedef struct {
     int page;
     int row;
     int column;
+    int isplaying;
 } spigot_tracker;
 
 static void init_note(tracker_note *note)
@@ -73,6 +74,7 @@ static void init_tracker(void *ud)
     st->page = 0;
     st->row = 0;
     st->column = 0;
+    st->isplaying = 0;
 }
 
 static void insert_note(spigot_tracker *t, int pos, int note)
@@ -315,7 +317,9 @@ static void draw_row_numbers(spigot_graphics *gfx, spigot_tracker *t)
 
 static void draw_selected_row(spigot_graphics *gfx, spigot_tracker *t)
 {
-    spigot_draw_rect(gfx, &t->row_selected, 16, 16 + t->row * 8, 160, 8);
+    if(t->isplaying) {
+        spigot_draw_rect(gfx, &t->row_selected, 16, 16 + t->row * 8, 160, 8);
+    }
 }
 
 static void redraw(spigot_graphics *gfx, void *ud)
@@ -333,6 +337,7 @@ static void redraw(spigot_graphics *gfx, void *ud)
     for(i = 0; i < 10; i++) {
         spigot_draw_rect(gfx, &t->shade, 16, 16 + 16 * i, 160, 8);
     }
+
     draw_selected_row(gfx, t);
 
     /* draw border */
@@ -448,7 +453,10 @@ static int rproc_chan(runt_vm *vm, runt_ptr p)
     if(rsd->loaded == 0) {
         runt_print(vm, "tracker_chan: state not set yet!\n");
         return RUNT_NOT_OK;
+    } else if(rsd->state->type != SPIGOT_TRACKER) {
+        runt_print(vm, "tracker_chan: this is not a tracker!\n");
     }
+
     t = rsd->state->ud;
     rc = runt_ppop(vm, &s);
     RUNT_ERROR_CHECK(rc);
@@ -462,7 +470,7 @@ static void tracker_step(void *ud)
 {
     spigot_tracker *t;
     t = ud;
-    t->row = (t->row + 1) % 19;
+    if(t->isplaying) t->row = (t->row + 1) % 19;
 }
 
 static int rproc_note(runt_vm *vm, runt_ptr p)
@@ -479,7 +487,10 @@ static int rproc_note(runt_vm *vm, runt_ptr p)
     if(rsd->loaded == 0) {
         runt_print(vm, "tracker_note: state not set yet!\n");
         return RUNT_NOT_OK;
+    } else if(rsd->state->type != SPIGOT_TRACKER) {
+        runt_print(vm, "tracker_note: this is not a tracker!\n");
     }
+
     t = rsd->state->ud;
     
     rc = runt_ppop(vm, &s);
@@ -492,6 +503,19 @@ static int rproc_note(runt_vm *vm, runt_ptr p)
 
     insert_note(t, row, note);
     return RUNT_OK;
+}
+
+static void toggle(void *ud)
+{
+    spigot_tracker *t;
+    t = ud;
+    if(t->isplaying) {
+        t->isplaying = 0;
+    } else {
+        t->isplaying = 1;
+        t->row = -1;
+    }
+
 }
 
 int spigot_tracker_runt(runt_vm *vm, runt_ptr p)
@@ -510,6 +534,9 @@ void spigot_tracker_state(plumber_data *pd, spigot_state *state)
     state->ud = malloc(sizeof(spigot_tracker));
     state->draw = redraw;
     state->step = tracker_step;
+    state->toggle = toggle;
+
+    state->type = SPIGOT_TRACKER;
     t = state->ud;
     init_sequence_data(t);
 }

@@ -2,7 +2,6 @@
 #include <sporth.h>
 #include "spigot.h"
 
-
 static runt_int rproc_pbrain(runt_vm *vm, runt_ptr p)
 {
     runt_spigot_data *rsd;

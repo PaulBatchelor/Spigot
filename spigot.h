@@ -10,6 +10,12 @@ typedef void (*spigot_fun)(void *);
 typedef void (*spigot_constfun)(void *, SPFLOAT);
 typedef void (*spigot_drawfun)(spigot_graphics *, void *);
 
+enum {
+SPIGOT_NONE,
+SPIGOT_PBRAIN,
+SPIGOT_TRACKER
+};
+
 typedef struct {
     spigot_fun up;
     spigot_fun down;
@@ -24,6 +30,7 @@ typedef struct {
 
     spigot_drawfun draw;
     spigot_drawfun gfx_init;
+    int type;
     void *ud;
 } spigot_state;
 

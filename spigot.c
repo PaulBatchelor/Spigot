@@ -43,6 +43,7 @@ void spigot_state_init(spigot_state *state)
 
     state->draw = null_drawfun;
     state->gfx_init= null_drawfun;
+    state->type = SPIGOT_NONE;
 }
 
 static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
