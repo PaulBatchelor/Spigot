@@ -6,3 +6,5 @@ new_state tracker spigot_state
 
 # set zoom level to 3
 3 spigot_zoom 
+
+"notes" tracker_table
