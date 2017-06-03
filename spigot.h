@@ -29,6 +29,12 @@ typedef struct {
 } spigot_state;
 
 typedef struct {
+    plumber_data *pd;
+    spigot_state *state;
+    runt_int loaded;
+} runt_spigot_data;
+
+typedef struct {
     char r, g, b;
 } spigot_color;
 
@@ -85,8 +91,12 @@ int spigot_load(plumber_data *pd, runt_vm *vm,
 void spigot_pbrain_bind(plumber_data *pd, spigot_state *state, const char *var);
 
 void spigot_tracker_state(plumber_data *pd, spigot_state *state);
-int spigot_tracker_runt(runt_vm *vm);
+int spigot_tracker_runt(runt_vm *vm, runt_ptr p);
 
 unsigned char * spigot_graphics_get_buf(spigot_graphics *gfx);
+void spigot_word_define(runt_vm *vm, runt_ptr p,
+    const char *str,
+    runt_uint size,
+    runt_proc proc);
 
 #endif

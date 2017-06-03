@@ -64,7 +64,6 @@ static void init_tracker(void *ud)
     spigot_tracker *st;
 
     st = ud;
-    init_sequence_data(st);
 
     /* page offset (used in drawing) */
     st->offset = 0;
@@ -421,13 +420,70 @@ static void spigot_tracker_free(void *ud)
 
 void spigot_tracker_state(plumber_data *pd, spigot_state *state)
 {
+    spigot_tracker *t;
     state->gfx_init = init_tracker_gfx;
     state->free = spigot_tracker_free;
     state->init = init_tracker;
     state->ud = malloc(sizeof(spigot_tracker));
+    t = state->ud;
+    init_sequence_data(t);
 }
 
-int spigot_tracker_runt(runt_vm *vm)
+static int rproc_chan(runt_vm *vm, runt_ptr p)
 {
+    runt_int rc;
+    runt_stacklet *s;
+    runt_spigot_data *rsd;
+    spigot_tracker *t;
+    runt_int chan;
+
+    rsd = runt_to_cptr(p);
+
+    if(rsd->loaded == 0) {
+        runt_print(vm, "tracker_chan: state not set yet!\n");
+        return RUNT_NOT_OK;
+    }
+    t = rsd->state->ud;
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    chan = s->f;
+    t->chan = chan;
+
+    return RUNT_OK;
+}
+
+static int rproc_note(runt_vm *vm, runt_ptr p)
+{
+    runt_int rc;
+    runt_stacklet *s;
+    runt_spigot_data *rsd;
+    spigot_tracker *t;
+    runt_int note;
+    runt_int row;
+
+    rsd = runt_to_cptr(p);
+
+    if(rsd->loaded == 0) {
+        runt_print(vm, "tracker_note: state not set yet!\n");
+        return RUNT_NOT_OK;
+    }
+    t = rsd->state->ud;
+    
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    row = s->f;
+
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    note = s->f;
+
+    insert_note(t, row, note);
+    return RUNT_OK;
+}
+
+int spigot_tracker_runt(runt_vm *vm, runt_ptr p)
+{
+    spigot_word_define(vm, p, "tracker_note", 12, rproc_note);
+    spigot_word_define(vm, p, "tracker_chan", 12, rproc_chan);
     return runt_is_alive(vm);
 }

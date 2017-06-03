@@ -1,5 +1,5 @@
-[
-: state ptr ;
-]
+new_state tracker spigot_state
 
-new_state tracker dup setptr spigot_state
+0 tracker_chan
+
+"ex/notes.rnt" eval

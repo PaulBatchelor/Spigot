@@ -2,10 +2,6 @@
 #include <sporth.h>
 #include "spigot.h"
 
-typedef struct {
-    plumber_data *pd;
-    spigot_state *state;
-} runt_spigot_data;
 
 static runt_int rproc_pbrain(runt_vm *vm, runt_ptr p)
 {
@@ -53,6 +49,7 @@ static runt_int rproc_state(runt_vm *vm, runt_ptr p)
     RUNT_ERROR_CHECK(rc);
     state = runt_to_cptr(s->p);
     rsd->state = state;
+    rsd->loaded = 1;
     return RUNT_OK;
 }
 
@@ -98,11 +95,10 @@ static runt_int rproc_tracker(runt_vm *vm, runt_ptr p)
 }
 
 
-static void spigot_word_define(runt_vm *vm,
+void spigot_word_define(runt_vm *vm, runt_ptr p,
     const char *str,
     runt_uint size,
-    runt_proc proc,
-    runt_ptr p)
+    runt_proc proc)
 {
     runt_uint id;
     id = runt_word_define(vm, str, size, proc);
@@ -117,14 +113,16 @@ int spigot_load(plumber_data *pd, runt_vm *vm,
 
     runt_malloc(vm, sizeof(runt_spigot_data), (void **)&rsd);
     rsd->pd = pd;
+    rsd->loaded = 0;
     p = runt_mk_cptr(vm, rsd);
 
     runt_mark_set(vm);
     runt_load_stdlib(vm);
-    spigot_word_define(vm, "pbrain", 6, rproc_pbrain, p);
-    spigot_word_define(vm, "spigot_state", 12, rproc_state, p);
-    spigot_word_define(vm, "new_state", 9, rproc_newstate, p);
-    spigot_word_define(vm, "tracker", 7, rproc_tracker, p);
+    spigot_word_define(vm, p, "pbrain", 6, rproc_pbrain);
+    spigot_word_define(vm, p, "spigot_state", 12, rproc_state);
+    spigot_word_define(vm, p, "new_state", 9, rproc_newstate);
+    spigot_word_define(vm, p, "tracker", 7, rproc_tracker);
+    spigot_tracker_runt(vm, p);
 
     runt_mark_set(vm);
     runt_set_state(vm, RUNT_MODE_INTERACTIVE, RUNT_ON);
