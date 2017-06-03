@@ -1,0 +1,23 @@
+# This program will regenerate asset data needed for the tracker
+# It will read in the PNG file "assets.png" and then generate
+# a pseudo-bitmap C header file called "tracker_assets.h". 
+#
+# In order to run this program, the runt-img runt interpreter rntimg 
+# will need to be installed. Once installed, the program can be run with:
+#
+#       rntimg regen_assets.rnt
+#
+
+[ 
+: img ptr ; 
+]
+
+"assets.png" img_load _img setptr
+
+128 128 img_setsize
+
+0 0 0 0 128 128 img img_copy
+
+"tracker_assets" "tracker_assets.h" img_writeb
+
+img img_close
