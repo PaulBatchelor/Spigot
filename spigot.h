@@ -25,13 +25,13 @@ typedef struct {
     spigot_drawfun draw;
     spigot_drawfun gfx_init;
     void *ud;
-    int magic;
 } spigot_state;
 
 typedef struct {
     plumber_data *pd;
     spigot_state *state;
     runt_int loaded;
+    int *zoom;
 } runt_spigot_data;
 
 typedef struct {
@@ -48,7 +48,7 @@ int spigot_get_pos(spigot_pbrain *spb);
 spigot_pbrain * spigot_pbrain_new();
 void spigot_pbrain_free(void *ud);
 
-spigot_graphics * spigot_gfx_new();
+spigot_graphics * spigot_gfx_new(int zoom);
 void spigot_start(spigot_graphics *spgt);
 void spigot_stop(spigot_graphics *spgt);
 
@@ -86,7 +86,7 @@ void spigot_draw_rect(spigot_graphics *gfx, spigot_color *clr,
 
 
 int spigot_load(plumber_data *pd, runt_vm *vm, 
-        spigot_state **state, const char *filename);
+        spigot_state **state, const char *filename, int *zoom);
 
 void spigot_pbrain_bind(plumber_data *pd, spigot_state *state, const char *var);
 

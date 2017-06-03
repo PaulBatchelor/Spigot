@@ -51,6 +51,7 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
     SPFLOAT in;
     spigot_stuff *stuff;
     int rc;
+    int zoom;
     switch(pd->mode) {
         case PLUMBER_CREATE:
             if(sporth_check_args(stack, "ffs") != SPORTH_OK) {
@@ -71,9 +72,10 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             runt_cell_pool_init(&stuff->vm);
             runt_memory_pool_set(&stuff->vm, stuff->mem, 5 * RUNT_MEGABYTE);
 
-            rc = spigot_load(pd, &stuff->vm, &stuff->state, filename);
+            zoom = 3;
+            rc = spigot_load(pd, &stuff->vm, &stuff->state, filename, &zoom);
 
-            stuff->gfx = spigot_gfx_new();
+            stuff->gfx = spigot_gfx_new(zoom);
 
             spigot_gfx_set_state(stuff->gfx, stuff->state);
 

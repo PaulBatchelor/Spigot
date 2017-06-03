@@ -3,3 +3,6 @@ new_state tracker spigot_state
 0 tracker_chan
 
 "ex/notes.rnt" eval
+
+# set zoom level to 3
+3 spigot_zoom 

@@ -66,7 +66,6 @@ static runt_int rproc_newstate(runt_vm *vm, runt_ptr p)
     /* make sure pool doesn't release the memory */
     spigot_state_init(state);
     runt_mark_set(vm);
-    state->magic=666;
     s->p = runt_mk_cptr(vm, state);
 
     return RUNT_OK;
@@ -94,6 +93,20 @@ static runt_int rproc_tracker(runt_vm *vm, runt_ptr p)
     return RUNT_OK;
 }
 
+static int rproc_zoom(runt_vm *vm, runt_ptr p)
+{
+    runt_int rc;
+    runt_stacklet *s;
+    runt_spigot_data *rsd;
+
+    rsd = runt_to_cptr(p);
+
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    *rsd->zoom = s->f;
+
+    return RUNT_OK;
+}
 
 void spigot_word_define(runt_vm *vm, runt_ptr p,
     const char *str,
@@ -106,7 +119,7 @@ void spigot_word_define(runt_vm *vm, runt_ptr p,
 }
 
 int spigot_load(plumber_data *pd, runt_vm *vm, 
-        spigot_state **state, const char *filename)
+        spigot_state **state, const char *filename, int *zoom)
 {
     runt_spigot_data *rsd;
     runt_ptr p;
@@ -114,6 +127,7 @@ int spigot_load(plumber_data *pd, runt_vm *vm,
     runt_malloc(vm, sizeof(runt_spigot_data), (void **)&rsd);
     rsd->pd = pd;
     rsd->loaded = 0;
+    rsd->zoom = zoom;
     p = runt_mk_cptr(vm, rsd);
 
     runt_mark_set(vm);
@@ -122,7 +136,9 @@ int spigot_load(plumber_data *pd, runt_vm *vm,
     spigot_word_define(vm, p, "spigot_state", 12, rproc_state);
     spigot_word_define(vm, p, "new_state", 9, rproc_newstate);
     spigot_word_define(vm, p, "tracker", 7, rproc_tracker);
+    spigot_word_define(vm, p, "spigot_zoom", 11, rproc_zoom);
     spigot_tracker_runt(vm, p);
+    
 
     runt_mark_set(vm);
     runt_set_state(vm, RUNT_MODE_INTERACTIVE, RUNT_ON);

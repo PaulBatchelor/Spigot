@@ -13,7 +13,6 @@
 #include "box.h"
 
 #define WIDTH 193
-#define ZOOM 3
 
 struct spigot_graphics {
     int run;
@@ -22,6 +21,7 @@ struct spigot_graphics {
     int please_draw;
     unsigned char *buf;
     spigot_state *state;
+    int zoom;
 };
 
 void spigot_color_rgb(spigot_color *clr, uint8_t r, uint8_t g, uint8_t b)
@@ -94,7 +94,7 @@ static void draw(spigot_graphics *gfx)
     state->draw(gfx, state->ud);
     glClear(GL_COLOR_BUFFER_BIT);
     glRasterPos2i(0, 0);
-    glPixelZoom(ZOOM, -ZOOM);
+    glPixelZoom(gfx->zoom, -gfx->zoom);
     glDrawPixels(193, 193, GL_RGB, GL_UNSIGNED_BYTE, gfx->buf);
 }
 
@@ -162,7 +162,8 @@ static void * run_loop(void *ud)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
-    spgt->window = glfwCreateWindow(193 * ZOOM, 193 * ZOOM, "spigot", NULL, NULL);
+    spgt->window = glfwCreateWindow(193 * spgt->zoom, 193 * spgt->zoom, 
+            "spigot", NULL, NULL);
 
     if (!spgt->window) {
         glfwTerminate();
@@ -234,11 +235,12 @@ void spigot_gfx_init(spigot_graphics *gfx)
     state->gfx_init(gfx, state->ud);
 }
 
-spigot_graphics * spigot_gfx_new()
+spigot_graphics * spigot_gfx_new(int zoom)
 {
     spigot_graphics *gfx;
     gfx = malloc(sizeof(spigot_graphics));
     gfx->buf = malloc(193 * 193 * 3 * sizeof(unsigned char));
+    gfx->zoom = zoom;
     return gfx;
 }
 
