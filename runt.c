@@ -85,7 +85,7 @@ static runt_int rproc_tracker(runt_vm *vm, runt_ptr p)
     RUNT_ERROR_CHECK(rc);
     state = runt_to_cptr(s->p);
 
-    spigot_tracker_state(pd, state);
+    spigot_tracker_state(pd, vm, state);
 
     rc = runt_ppush(vm, &s);
     s->p = runt_mk_cptr(vm, state);

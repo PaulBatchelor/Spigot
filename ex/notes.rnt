@@ -1,18 +1,29 @@
 0 tracker_chan
 60 0 tracker_note
+62 1 tracker_note
+64 2 tracker_note
+65 3 tracker_note
+67 4 tracker_note
+5 tracker_noteoff
+60 6 tracker_note
+62 7 tracker_note
+64 8 tracker_note
+65 9 tracker_note
+11 tracker_noteoff
+
 1 tracker_chan
-64 0 tracker_note
+72 0 tracker_note
+60 2 tracker_note
+67 3 tracker_note
+60 4 tracker_note
+67 5 tracker_note
+69 6 tracker_note
+7 tracker_noteoff
+72 10 tracker_note
+
 2 tracker_chan
-67 0 tracker_note
+
 3 tracker_chan
-71 0 tracker_note
+
 4 tracker_chan
-74 0 tracker_note
 
-0 tracker_chan
-71 3 tracker_note
-
-6 tracker_noteoff
-
-64 32 tracker_note
-40 tracker_noteoff

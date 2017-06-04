@@ -1,6 +1,8 @@
 #include <soundpipe.h>
 #include <sporth.h>
 #include <stdlib.h>
+#include <GLFW/glfw3.h>
+#include <unistd.h>
 
 #include "spigot.h"
 #include "tracker_assets.h"
@@ -21,6 +23,7 @@ typedef struct {
 } tracker_page; 
 
 typedef struct {
+    runt_vm *vm;
     spigot_color background;
     spigot_color foreground;
     spigot_color shade;
@@ -40,6 +43,10 @@ typedef struct {
     int isstarted;
     SPFLOAT slice[NCHAN];
     SPFLOAT gates[NCHAN];
+    int oct;
+    const char *filename;
+    int loaded;
+    int step;
 } spigot_tracker;
 
 static void init_note(tracker_note *note)
@@ -86,6 +93,8 @@ static void init_tracker(void *ud)
         st->slice[i] = 0;
         st->gates[i] = 0;
     }
+    st->oct = 4;
+    st->step = 1;
 }
 
 static void insert_note(spigot_tracker *t, int pos, int note)
@@ -716,6 +725,97 @@ static int rproc_play(runt_vm *vm, runt_ptr p)
     return RUNT_OK;
 }
 
+static void load_tracker_file(spigot_tracker *t)
+{
+    if(!t->loaded) {
+        runt_print(t->vm, "No filename loaded!\n");
+        return;
+    }
+    if(access(t->filename, F_OK) != -1) {
+        runt_print(t->vm, "Loading file %s\n", t->filename);
+        init_sequence_data(t);
+        runt_parse_file(t->vm, t->filename);
+        t->row = 0;
+        t->chan = 0;
+        t->offset = 0;
+    }
+}
+
+static void save_tracker_file(spigot_tracker *t)
+{
+    FILE *fp;
+    int row, chan;
+    tracker_page *pg;
+    tracker_note *nt;
+
+    if(!t->loaded) {
+        runt_print(t->vm, "No filename loaded!\n");
+        return;
+    }
+    fp = fopen(t->filename, "w");
+
+    if(fp == NULL) {
+        runt_print(t->vm, "There was a problem writing to %s.\n", t->filename);
+        return;
+    }
+    
+    runt_print(t->vm, "File saved to %s.\n", t->filename);
+
+    pg = &t->pages[0];
+
+    for(chan = 0; chan < NCHAN; chan++) {
+        fprintf(fp, "%d tracker_chan\n", chan);
+        for(row = 0; row < PATSIZE; row++) {
+            nt = get_note_from_page(pg, row, chan);
+            if(nt->note >= 0) {
+                fprintf(fp, "%d %d tracker_note\n", nt->note, row);
+            } else if(nt->note == -2) {
+                fprintf(fp, "%d tracker_noteoff\n", row);
+            }
+        }
+        fprintf(fp, "\n");
+    }
+
+    fclose(fp);
+}
+
+static int rproc_load(runt_vm *vm, runt_ptr p)
+{
+    runt_int rc;
+    runt_stacklet *s;
+    runt_spigot_data *rsd;
+    spigot_tracker *t;
+    const char *str;
+
+    rsd = runt_to_cptr(p);
+
+    if(rsd->loaded == 0) {
+        runt_print(vm, "Please load a state first.\n");
+        return RUNT_NOT_OK;
+    }
+
+    if(rsd->state->type != SPIGOT_TRACKER) {
+        runt_print(vm, "State type is not a tracker.\n");
+        return RUNT_NOT_OK;
+    }
+    
+    t = rsd->state->ud;
+
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    str = runt_to_string(s->p);
+    /* save string onto stack... careful */
+    runt_mark_set(vm);
+    runt_cell_undo(vm);
+
+    t->loaded = 1;
+    t->filename = str;
+
+    load_tracker_file(t);
+
+    return RUNT_OK;
+}
+
 static void toggle(void *ud)
 {
     spigot_tracker *t;
@@ -752,7 +852,7 @@ static void up(void *ud)
 {
     spigot_tracker *t;
     t = ud;
-    t->row -= 1;
+    t->row -= t->step;
 
     if(t->row < 0) t->row = 0;
 }
@@ -761,11 +861,145 @@ static void down(void *ud)
 {
     spigot_tracker *t;
     t = ud;
-    t->row = (t->row + 1);
+    t->row = (t->row + t->step);
 
     if(t->row >= PATSIZE) t->row = PATSIZE - 1;
 }
 
+static void keyhandler(spigot_graphics *gfx, void *ud, 
+        int key, int scancode, int action, int mods)
+{
+    spigot_tracker *t;
+    t = ud;
+    if(action == GLFW_PRESS || action == GLFW_REPEAT) {
+        if(mods == GLFW_MOD_SHIFT) {
+            switch(key) {
+                case GLFW_KEY_1:
+                    insert_note(t, t->row, -2);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_EQUAL:
+                    t->step += 1;
+                    break;
+            }
+        } else {
+            switch(key) {
+                case GLFW_KEY_Q:
+                    insert_note(t, t->row, 12 * (t->oct + 1));
+                    down(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_2:
+                    insert_note(t, t->row, 12 * (t->oct + 1) + 1);
+                    down(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_W:
+                    insert_note(t, t->row, 12 * (t->oct + 1) + 2);
+                    down(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_3:
+                    insert_note(t, t->row, 12 * (t->oct + 1) + 3);
+                    down(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_E:
+                    insert_note(t, t->row, 12 * (t->oct + 1) + 4);
+                    down(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_R:
+                    insert_note(t, t->row, 12 * (t->oct + 1) + 5);
+                    down(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_5:
+                    insert_note(t, t->row, 12 * (t->oct + 1) + 6);
+                    down(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_T:
+                    insert_note(t, t->row, 12 * (t->oct + 1) + 7);
+                    down(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_6:
+                    insert_note(t, t->row, 12 * (t->oct + 1) + 8);
+                    down(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_Y:
+                    insert_note(t, t->row, 12 * (t->oct + 1) + 9);
+                    down(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_7:
+                    insert_note(t, t->row, 12 * (t->oct + 1) + 10);
+                    down(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_U:
+                    insert_note(t, t->row, 12 * (t->oct + 1) + 11);
+                    down(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_I:
+                    insert_note(t, t->row, 12 * (t->oct + 1) + 12);
+                    down(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_9:
+                    insert_note(t, t->row, 12 * (t->oct + 1) + 13);
+                    down(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_O:
+                    insert_note(t, t->row, 12 * (t->oct + 1) + 14);
+                    down(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_0:
+                    insert_note(t, t->row, 12 * (t->oct + 1) + 15);
+                    down(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_P:
+                    insert_note(t, t->row, 12 * (t->oct + 1) + 16);
+                    down(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_X:
+                    insert_note(t, t->row, -1);
+                    down(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_F:
+                    load_tracker_file(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_S:
+                    save_tracker_file(t);
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_COMMA:
+                    t->oct -= 1;
+                    if(t->oct < 1) t->oct = 1;
+                    break;
+                case GLFW_KEY_PERIOD:
+                    t->oct += 1;
+                    if(t->oct > 7) t->oct = 7;
+                    break;
+                case GLFW_KEY_MINUS:
+                    t->step -= 1;
+                    if(t->step <= 0) t->step = 0;
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+}
 
 int spigot_tracker_runt(runt_vm *vm, runt_ptr p)
 {
@@ -775,10 +1009,12 @@ int spigot_tracker_runt(runt_vm *vm, runt_ptr p)
     spigot_word_define(vm, p, "tracker_noteoff", 15, rproc_noteoff);
     spigot_word_define(vm, p, "tracker_gates", 13, rproc_gates);
     spigot_word_define(vm, p, "tracker_play", 12, rproc_play);
+    spigot_word_define(vm, p, "tracker_open", 12, rproc_load);
     return runt_is_alive(vm);
 }
 
-void spigot_tracker_state(plumber_data *pd, spigot_state *state)
+
+void spigot_tracker_state(plumber_data *pd, runt_vm *vm, spigot_state *state)
 {
     spigot_tracker *t;
     state->gfx_init = init_tracker_gfx;
@@ -792,8 +1028,10 @@ void spigot_tracker_state(plumber_data *pd, spigot_state *state)
     state->left = left;
     state->up = up;
     state->down = down;
+    state->key = keyhandler;
 
     state->type = SPIGOT_TRACKER;
     t = state->ud;
     init_sequence_data(t);
+    t->vm = vm;
 }

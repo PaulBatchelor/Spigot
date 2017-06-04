@@ -99,7 +99,7 @@ int spigot_load(plumber_data *pd, runt_vm *vm,
 
 void spigot_pbrain_bind(plumber_data *pd, spigot_state *state, const char *var);
 
-void spigot_tracker_state(plumber_data *pd, spigot_state *state);
+void spigot_tracker_state(plumber_data *pd, runt_vm *vm, spigot_state *state);
 int spigot_tracker_runt(runt_vm *vm, runt_ptr p);
 
 unsigned char * spigot_graphics_get_buf(spigot_graphics *gfx);

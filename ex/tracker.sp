@@ -10,7 +10,7 @@ _clk var
 _spigot fe 
 
 
-0 _notes tget mtof 0.3 sine 0 _gates tget 0.01 port * 
+0 _notes tget mtof 0.3 sine 0 _gates tget _play get * 0.01 port * 
 
 _play get *
 dup
