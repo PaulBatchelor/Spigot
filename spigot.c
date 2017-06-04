@@ -23,6 +23,12 @@ static void null_drawfun(spigot_graphics *gfx, void *ud)
 
 }
 
+static void null_keyfun(spigot_graphics *gfx, void *ud, 
+        int a, int b, int c, int d)
+{
+
+}
+
 static void null_constant(void *ud, SPFLOAT val)
 {
 
@@ -40,10 +46,12 @@ void spigot_state_init(spigot_state *state)
     state->step = null_fun;
     state->init = null_fun;
     state->constant = null_constant;
+    state->key = null_keyfun;
 
     state->draw = null_drawfun;
     state->gfx_init= null_drawfun;
     state->type = SPIGOT_NONE;
+
 }
 
 static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)

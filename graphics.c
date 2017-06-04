@@ -144,6 +144,7 @@ static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
                 gfx->please_draw = 1;
                 break;
             default:
+                state->key(gfx, state->ud, key, scancode, action, mods);
                 break;
         }
     }

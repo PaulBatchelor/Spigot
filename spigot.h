@@ -9,6 +9,7 @@ typedef struct spigot_graphics spigot_graphics;
 typedef void (*spigot_fun)(void *);
 typedef void (*spigot_constfun)(void *, SPFLOAT);
 typedef void (*spigot_drawfun)(spigot_graphics *, void *);
+typedef void (*spigot_keyfun)(spigot_graphics *, void *, int, int, int, int);
 
 enum {
 SPIGOT_NONE,
@@ -30,6 +31,7 @@ typedef struct {
 
     spigot_drawfun draw;
     spigot_drawfun gfx_init;
+    spigot_keyfun key;
     int type;
     void *ud;
 } spigot_state;
