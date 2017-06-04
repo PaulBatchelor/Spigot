@@ -35,7 +35,8 @@ typedef struct {
     int page;
     int row;
     int column;
-    SPFLOAT isplaying;
+    int isplaying;
+    SPFLOAT isrolling;
     int isstarted;
     SPFLOAT slice[NCHAN];
     SPFLOAT gates[NCHAN];
@@ -76,9 +77,10 @@ static void init_tracker(void *ud)
     st->offset = 0;
     st->chan = 0;
     st->page = 0;
-    st->row = 0;
+    st->row = -1;
     st->column = 0;
-    st->isplaying = 0;
+    st->isplaying = 1;
+    st->isrolling = 1;
     
     for(i = 0; i < NCHAN; i++) {
         st->slice[i] = 0;
@@ -307,6 +309,7 @@ static void draw_page(spigot_graphics *gfx, spigot_tracker *t)
     int chan;
     int row_min;
     int row_max;
+    spigot_color *clr;
 
     pg = &t->pages[t->page];
 
@@ -318,7 +321,12 @@ static void draw_page(spigot_graphics *gfx, spigot_tracker *t)
             pos = chan * PATSIZE + row;
             nt = &pg->notes[pos];
             note_to_args(nt, &n, &op, &oct);
-            draw_note(gfx, &t->foreground, chan, row, n, op, oct, t->offset);
+            if(chan == t->chan && row == t->row && !t->isplaying) {
+                clr = &t->text_selected;
+            } else {
+                clr = &t->foreground;
+            }
+            draw_note(gfx, clr, chan, row, n, op, oct, t->offset);
         }
     }
 }
@@ -339,10 +347,25 @@ static void draw_row_numbers(spigot_graphics *gfx, spigot_tracker *t)
 static void draw_selected_row(spigot_graphics *gfx, spigot_tracker *t)
 {
     int row;
+    row = (t->row < 0) ? 0 : t->row;
+    row = row % NROWS;
     if(t->isplaying) {
-        row = (t->row < 0) ? 0 : t->row;
-        row = row % NROWS;
         spigot_draw_rect(gfx, &t->row_selected, 16, 16 + row * 8, 160, 8);
+    } else {
+        spigot_draw_rect(gfx, &t->foreground, 16 + 
+            t->chan * 32, 16 + row * 8, 32, 8);
+    }
+}
+
+static void calculate_offsets(spigot_tracker *t)
+{
+    if(t->row == PATSIZE) {
+        t->offset = 0;
+        t->row = 0;
+    } else if((t->row - t->offset) >= NROWS){
+        t->offset += NROWS;
+    } else if((t->row < t->offset) &&  t->row >= 0) {
+        t->offset -= NROWS;
     }
 }
 
@@ -352,7 +375,8 @@ static void redraw(spigot_graphics *gfx, void *ud)
     int i;
     
     t = ud;
-   
+  
+    calculate_offsets(t);
     /* fill background */
     spigot_draw_fill(gfx, &t->background);
    
@@ -508,17 +532,12 @@ static void tracker_step(void *ud)
     t = ud;
     pg = get_current_page(t);
     if(t->isplaying) {
+        t->isrolling = 1;
         if(t->isstarted == 1) {
             t->isstarted = 0;
         } else {
             t->row++;
-
-            if(t->row == PATSIZE) {
-                t->offset = 0;
-                t->row = 0;
-            } else if((t->row - t->offset) >= NROWS){
-                t->offset += NROWS;
-            }
+            calculate_offsets(t);
         }
 
         for(i = 0; i < NCHAN; i++) {
@@ -691,7 +710,7 @@ static int rproc_play(runt_vm *vm, runt_ptr p)
     str = runt_to_string(s->p);
 
     plumber_ftmap_delete(pd, 0);
-    plumber_ftmap_add_userdata(pd, str, &t->isplaying);
+    plumber_ftmap_add_userdata(pd, str, &t->isrolling);
     plumber_ftmap_delete(pd, 1);
 
     return RUNT_OK;
@@ -703,6 +722,7 @@ static void toggle(void *ud)
     t = ud;
     if(t->isplaying) {
         t->isplaying = 0;
+        t->isrolling = 0;
     } else {
         t->isplaying = 1;
         t->isstarted = 1;
@@ -711,6 +731,41 @@ static void toggle(void *ud)
     }
 
 }
+
+static void left(void *ud)
+{
+    spigot_tracker *t;
+    t = ud;
+    t->chan = t->chan - 1;
+
+    if(t->chan < 0) t->chan = NCHAN - 1;
+}
+
+static void right(void *ud)
+{
+    spigot_tracker *t;
+    t = ud;
+    t->chan = (t->chan + 1) % NCHAN;
+}
+
+static void up(void *ud)
+{
+    spigot_tracker *t;
+    t = ud;
+    t->row -= 1;
+
+    if(t->row < 0) t->row = 0;
+}
+
+static void down(void *ud)
+{
+    spigot_tracker *t;
+    t = ud;
+    t->row = (t->row + 1);
+
+    if(t->row >= PATSIZE) t->row = PATSIZE - 1;
+}
+
 
 int spigot_tracker_runt(runt_vm *vm, runt_ptr p)
 {
@@ -733,6 +788,10 @@ void spigot_tracker_state(plumber_data *pd, spigot_state *state)
     state->draw = redraw;
     state->step = tracker_step;
     state->toggle = toggle;
+    state->right = right;
+    state->left = left;
+    state->up = up;
+    state->down = down;
 
     state->type = SPIGOT_TRACKER;
     t = state->ud;
