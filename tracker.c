@@ -47,6 +47,7 @@ typedef struct {
     const char *filename;
     int loaded;
     int step;
+    int nseq;
 } spigot_tracker;
 
 static void init_note(tracker_note *note)
@@ -95,6 +96,10 @@ static void init_tracker(void *ud)
     }
     st->oct = 4;
     st->step = 1;
+
+    /* temporary: by default add one page to the sequance. */
+    st->nseq = 1;
+    st->seq[0] = 0;
 }
 
 static void insert_note(spigot_tracker *t, int pos, int note)
