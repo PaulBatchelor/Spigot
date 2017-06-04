@@ -1,13 +1,16 @@
 new_state tracker spigot_state
 
-0 tracker_chan
-
-# "ex/notes.rnt" eval
+# open file for read/write
 "ex/notes.rnt" tracker_open
 
 # set zoom level to 3
 2 spigot_zoom 
 
+# Create Sporth table for note data
 "notes" tracker_notes
+
+# Create Sporth table for gate data
 "gates" tracker_gates
+
+# Create variable that is a gate for start/stop
 "play" tracker_play
