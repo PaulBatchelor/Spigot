@@ -36,6 +36,7 @@ struct spigot_pbrain {
     int prev;
     SPFLOAT *out;
     runt_uint fid;
+    runt_vm *vm;
 };
 
 static void e(spigot_pbrain *spb, int i){
@@ -99,6 +100,18 @@ static void init(spigot_pbrain *spb)
     for(spb->q=0;spb->q<=USHRT_MAX;spb->q++) spb->ptable[spb->q]=-1;
 }
 
+static unsigned short pop(runt_vm *vm)
+{
+    runt_uint rc;
+    runt_stacklet *s;
+    rc = runt_ppop(vm, &s);
+    if(rc != RUNT_OK) {
+        return 0;
+    } else {
+        return s->f;
+    }
+}
+
 static int step(spigot_pbrain *spb)
 {
         switch(spb->code[spb->q]){
@@ -106,7 +119,11 @@ static int step(spigot_pbrain *spb)
             case '-': spb->a[spb->p]--; return 3;
             case '<': if(--spb->p<0) e(spb, 3); return 4;
             case '>': if(++spb->p>=SIZE) e(spb, 3); return 5;
-            case ',': spb->a[spb->p]=spb->in; return 0;
+            case ',': 
+                runt_cell_id_exec(spb->vm, spb->fid);
+                spb->a[spb->p]=pop(spb->vm); 
+                return 0;
+
             case '.': return 1;
             case '[': if(!spb->a[spb->p]) spb->q=spb->t[spb->q]; return 6;
             case ']': if(spb->a[spb->p]) spb->q=spb->t[spb->q]; return 7;
@@ -321,7 +338,7 @@ static void spigot_pbrain_init(void *ud)
     spb->q = 0;
 }
 
-void spigot_pbrain_state(plumber_data *pd, spigot_state *state)
+void spigot_pbrain_state(plumber_data *pd, runt_vm *vm, spigot_state *state)
 {
     spigot_pbrain *spb;
     state->up = spigot_move_up;
@@ -339,6 +356,8 @@ void spigot_pbrain_state(plumber_data *pd, spigot_state *state)
     spb = spigot_pbrain_new();
     spb->fid = 0;
     state->ud = spb;
+    state->type = SPIGOT_PBRAIN;
+    spb->vm = vm;
 }
 
 void spigot_pbrain_string(spigot_state *state, const char *str)
@@ -364,4 +383,43 @@ void spigot_pbrain_id(spigot_state *state, runt_uint id)
     spigot_pbrain *spb;
     spb = state->ud;
     spb->fid = id;
+}
+
+static runt_int rproc_pbrain_input(runt_vm *vm, runt_ptr p)
+{
+    runt_uint rc;
+    runt_stacklet *s;
+    runt_spigot_data *rsd;
+    spigot_state *state;
+    spigot_pbrain *spb;
+
+    rsd= runt_to_cptr(p);
+
+    if(!rsd->loaded) {
+        runt_print(vm, "State not loaded.\n");
+        return RUNT_NOT_OK;
+    }
+
+    state = rsd->state;
+
+    if(state->type != SPIGOT_PBRAIN) {
+        runt_print(vm, "Spigot type is not pbrain.\n");
+        return RUNT_NOT_OK;
+    }
+
+    spb = state->ud;
+
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+
+    spb->fid = s->f;
+
+    return RUNT_OK;
+}
+
+
+int spigot_pbrain_runt(runt_vm *vm, runt_ptr p)
+{
+    spigot_word_define(vm, p, "pbrain_input", 12, rproc_pbrain_input);
+    return runt_is_alive(vm);
 }

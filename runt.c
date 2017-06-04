@@ -27,7 +27,7 @@ static runt_int rproc_pbrain(runt_vm *vm, runt_ptr p)
     RUNT_ERROR_CHECK(rc);
     state = runt_to_cptr(s->p);
 
-    spigot_pbrain_state(pd, state);
+    spigot_pbrain_state(pd, vm, state);
     spigot_pbrain_string(state, code);
     spigot_pbrain_bind(pd, state, var);
 
@@ -137,6 +137,7 @@ int spigot_load(plumber_data *pd, runt_vm *vm,
     spigot_word_define(vm, p, "tracker", 7, rproc_tracker);
     spigot_word_define(vm, p, "spigot_zoom", 11, rproc_zoom);
     spigot_tracker_runt(vm, p);
+    spigot_pbrain_runt(vm, p);
     
 
     runt_mark_set(vm);

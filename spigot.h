@@ -69,7 +69,8 @@ void spigot_gfx_step(spigot_graphics *gfx);
 void spigot_gfx_pbrain_set(spigot_graphics *gfx, spigot_pbrain *spb);
 void spigot_gfx_set_state(spigot_graphics *gfx, spigot_state *state);
 
-void spigot_pbrain_state(plumber_data *pd, spigot_state *state);
+void spigot_pbrain_state(plumber_data *pd, runt_vm *vm, spigot_state *state);
+int spigot_pbrain_runt(runt_vm *vm, runt_ptr p);
 void spigot_pbrain_string(spigot_state *state, const char *str);
 void spigot_pbrain_id(spigot_state *state, runt_uint id);
 
