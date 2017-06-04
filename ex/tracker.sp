@@ -2,7 +2,7 @@
 _spigot "./spigot.so" fl
 _clk var
 
-1 metro dup _clk set
+4 metro dup _clk set
 
 1
 "ex/tracker.rnt"
@@ -10,8 +10,9 @@ _clk var
 _spigot fe 
 
 
-0 _notes tget mtof 0.3 sine 
+0 _notes tget mtof 0.3 sine 0 _gates tget 0.01 port * 
 
+_play get *
 dup
 
 _spigot fc

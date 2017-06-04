@@ -35,9 +35,10 @@ typedef struct {
     int page;
     int row;
     int column;
-    int isplaying;
+    SPFLOAT isplaying;
     int isstarted;
     SPFLOAT slice[NCHAN];
+    SPFLOAT gates[NCHAN];
 } spigot_tracker;
 
 static void init_note(tracker_note *note)
@@ -79,7 +80,10 @@ static void init_tracker(void *ud)
     st->column = 0;
     st->isplaying = 0;
     
-    for(i = 0; i < NCHAN; i++) st->slice[i] = 0;
+    for(i = 0; i < NCHAN; i++) {
+        st->slice[i] = 0;
+        st->gates[i] = 0;
+    }
 }
 
 static void insert_note(spigot_tracker *t, int pos, int note)
@@ -210,6 +214,13 @@ static void draw_note(spigot_graphics *gfx, spigot_color *clr,
                     4, 5, 
                     IMG_TRACKER_ASSETS_WIDTH,
                     tracker_assets + oct_off);
+        } else if(note == -2) { 
+            spigot_draw_glyph(gfx, clr, 
+                    x - 3, y - 1, 
+                    19, 5, 
+                    IMG_TRACKER_ASSETS_WIDTH,
+                    tracker_assets + 
+                    IMG_TRACKER_ASSETS_WIDTH * 24);
         } else {
             spigot_draw_glyph(gfx, clr, 
                     x - 3, y - 1, 
@@ -224,7 +235,7 @@ static void note_to_args(tracker_note *note, int *n, int *op, int *oct)
     int step;
 
     if(note->note < 0) {
-        *n = -1;
+        *n = note->note;
         *op = 0;
         *oct = 0;
     }
@@ -301,6 +312,7 @@ static void draw_page(spigot_graphics *gfx, spigot_tracker *t)
 
     row_min = t->offset;
     row_max = t->offset + NROWS; 
+    if(row_max > PATSIZE) row_max = PATSIZE;
     for(chan = 0; chan < NCHAN; chan++) {
         for(row = row_min; row < row_max; row++) {
             pos = chan * PATSIZE + row;
@@ -314,8 +326,12 @@ static void draw_page(spigot_graphics *gfx, spigot_tracker *t)
 static void draw_row_numbers(spigot_graphics *gfx, spigot_tracker *t)
 {
     int i;
+    int num;
     for(i = 0; i < 19; i++) {
-        draw_number(gfx, &t->foreground, 5, 18 + 8 * i, i + t->offset); 
+        num = i + t->offset;
+        if(num < PATSIZE) {
+            draw_number(gfx, &t->foreground, 5, 18 + 8 * i, num); 
+        }
     }
 }
 
@@ -325,6 +341,7 @@ static void draw_selected_row(spigot_graphics *gfx, spigot_tracker *t)
     int row;
     if(t->isplaying) {
         row = (t->row < 0) ? 0 : t->row;
+        row = row % NROWS;
         spigot_draw_rect(gfx, &t->row_selected, 16, 16 + row * 8, 160, 8);
     }
 }
@@ -494,12 +511,23 @@ static void tracker_step(void *ud)
         if(t->isstarted == 1) {
             t->isstarted = 0;
         } else {
-            t->row = (t->row + 1) % 19;
+            t->row++;
+
+            if(t->row == PATSIZE) {
+                t->offset = 0;
+                t->row = 0;
+            } else if((t->row - t->offset) >= NROWS){
+                t->offset += NROWS;
+            }
         }
+
         for(i = 0; i < NCHAN; i++) {
             nt = get_note_from_page(pg, t->row, i);
             if(nt->note >= 0) {
                 t->slice[i] = nt->note;
+                t->gates[i] = 1.0;
+            } else if (nt->note == -2) {
+                t->gates[i] = 0.0;
             }
         }
     }
@@ -537,7 +565,34 @@ static int rproc_note(runt_vm *vm, runt_ptr p)
     return RUNT_OK;
 }
 
-static int rproc_table(runt_vm *vm, runt_ptr p)
+static int rproc_noteoff(runt_vm *vm, runt_ptr p)
+{
+    runt_int rc;
+    runt_stacklet *s;
+    runt_spigot_data *rsd;
+    spigot_tracker *t;
+    runt_int row;
+
+    rsd = runt_to_cptr(p);
+
+    if(rsd->loaded == 0) {
+        runt_print(vm, "tracker_note: state not set yet!\n");
+        return RUNT_NOT_OK;
+    } else if(rsd->state->type != SPIGOT_TRACKER) {
+        runt_print(vm, "tracker_note: this is not a tracker!\n");
+    }
+
+    t = rsd->state->ud;
+    
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    row = s->f;
+
+    insert_note(t, row, -2);
+    return RUNT_OK;
+}
+
+static int rproc_notes(runt_vm *vm, runt_ptr p)
 {
     runt_int rc;
     runt_stacklet *s;
@@ -572,6 +627,76 @@ static int rproc_table(runt_vm *vm, runt_ptr p)
     return RUNT_OK;
 }
 
+static int rproc_gates(runt_vm *vm, runt_ptr p)
+{
+    runt_int rc;
+    runt_stacklet *s;
+    runt_spigot_data *rsd;
+    spigot_tracker *t;
+    const char *str;
+    plumber_data *pd;
+    sp_ftbl *ft;
+
+    rsd = runt_to_cptr(p);
+    pd = rsd->pd;
+
+    if(rsd->loaded == 0) {
+        runt_print(vm, "Please load a state first.\n");
+        return RUNT_NOT_OK;
+    }
+
+    if(rsd->state->type != SPIGOT_TRACKER) {
+        runt_print(vm, "State type is not a tracker.\n");
+        return RUNT_NOT_OK;
+    }
+
+    t = rsd->state->ud;
+
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    str = runt_to_string(s->p);
+
+    sp_ftbl_bind(pd->sp, &ft, t->gates, NCHAN);
+    plumber_ftmap_add(pd, str, ft);
+
+    return RUNT_OK;
+}
+
+static int rproc_play(runt_vm *vm, runt_ptr p)
+{
+    runt_int rc;
+    runt_stacklet *s;
+    runt_spigot_data *rsd;
+    spigot_tracker *t;
+    const char *str;
+    plumber_data *pd;
+
+    rsd = runt_to_cptr(p);
+    pd = rsd->pd;
+
+    if(rsd->loaded == 0) {
+        runt_print(vm, "Please load a state first.\n");
+        return RUNT_NOT_OK;
+    }
+
+    if(rsd->state->type != SPIGOT_TRACKER) {
+        runt_print(vm, "State type is not a tracker.\n");
+        return RUNT_NOT_OK;
+    }
+    
+    t = rsd->state->ud;
+
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    str = runt_to_string(s->p);
+
+    plumber_ftmap_delete(pd, 0);
+    plumber_ftmap_add_userdata(pd, str, &t->isplaying);
+    plumber_ftmap_delete(pd, 1);
+
+    return RUNT_OK;
+}
+
 static void toggle(void *ud)
 {
     spigot_tracker *t;
@@ -582,6 +707,7 @@ static void toggle(void *ud)
         t->isplaying = 1;
         t->isstarted = 1;
         t->row = 0;
+        t->offset = 0;
     }
 
 }
@@ -590,7 +716,10 @@ int spigot_tracker_runt(runt_vm *vm, runt_ptr p)
 {
     spigot_word_define(vm, p, "tracker_note", 12, rproc_note);
     spigot_word_define(vm, p, "tracker_chan", 12, rproc_chan);
-    spigot_word_define(vm, p, "tracker_table", 13, rproc_table);
+    spigot_word_define(vm, p, "tracker_notes", 13, rproc_notes);
+    spigot_word_define(vm, p, "tracker_noteoff", 15, rproc_noteoff);
+    spigot_word_define(vm, p, "tracker_gates", 13, rproc_gates);
+    spigot_word_define(vm, p, "tracker_play", 12, rproc_play);
     return runt_is_alive(vm);
 }
 

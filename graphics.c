@@ -121,6 +121,7 @@ static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
         switch(key) {
             case GLFW_KEY_SPACE:
                 state->toggle(state->ud);
+                gfx->please_draw = 1;
                 break;
             case GLFW_KEY_H:
                 state->left(state->ud);

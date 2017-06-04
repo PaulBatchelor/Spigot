@@ -5,6 +5,8 @@ new_state tracker spigot_state
 "ex/notes.rnt" eval
 
 # set zoom level to 3
-3 spigot_zoom 
+2 spigot_zoom 
 
-"notes" tracker_table
+"notes" tracker_notes
+"gates" tracker_gates
+"play" tracker_play

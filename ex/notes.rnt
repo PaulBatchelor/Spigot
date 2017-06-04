@@ -11,3 +11,8 @@
 
 0 tracker_chan
 71 3 tracker_note
+
+6 tracker_noteoff
+
+64 32 tracker_note
+40 tracker_noteoff
