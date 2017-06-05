@@ -386,7 +386,9 @@ static void calculate_offsets(spigot_tracker *t)
     } else if((t->row - t->offset) >= NROWS){
         t->offset += NROWS;
     } else if((t->row < t->offset) &&  t->row >= 0) {
-        t->offset -= NROWS;
+        while(t->row < t->offset) {
+            t->offset -= NROWS;
+        }
     }
 }
 
@@ -982,7 +984,7 @@ static void toggle(void *ud)
 {
     spigot_tracker *t;
     t = ud;
-    toggle_playmode(t, PLAYMODE_SONG);
+    toggle_playmode(t, PLAYMODE_PAGE);
 }
 
 static void left(void *ud)
