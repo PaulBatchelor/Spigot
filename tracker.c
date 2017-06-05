@@ -987,6 +987,17 @@ static void down(void *ud)
     if(t->row >= PATSIZE) t->row = PATSIZE - 1;
 }
 
+static void delete_sequence(spigot_tracker *t)
+{
+    int i;
+
+    for(i = t->seqpos; i < t->nseq; i++) {
+        t->seq[i] = t->seq[i + 1];
+    }
+    t->nseq--;
+    t->page = t->seq[t->seqpos];
+}
+
 static void keyhandler(spigot_graphics *gfx, void *ud, 
         int key, int scancode, int action, int mods)
 {
@@ -1024,6 +1035,9 @@ static void keyhandler(spigot_graphics *gfx, void *ud,
                     t->page--;
                     if(t->page < 0) t->page = MAX_PAGES - 1;
                     t->seq[t->seqpos] = t->page;
+                    spigot_gfx_step(gfx);
+                case GLFW_KEY_X:
+                    delete_sequence(t);
                     spigot_gfx_step(gfx);
                     break;
             }
