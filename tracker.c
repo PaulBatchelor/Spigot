@@ -600,9 +600,9 @@ static void tracker_step(void *ud)
                 }
             }
             calculate_offsets(t);
-            pg = get_current_page(t);
         }
 
+        pg = get_current_page(t);
         for(i = 0; i < NCHAN; i++) {
             nt = get_note_from_page(pg, t->row, i);
             if(nt->note >= 0) {
@@ -967,7 +967,6 @@ static void toggle_playmode(spigot_tracker *t, int playmode)
             case PLAYMODE_PAGE:
                 t->row = 0;
                 t->offset = 0;
-                printf("are we here?\n");
                 break;
             case PLAYMODE_INPLACE: 
                 break;
