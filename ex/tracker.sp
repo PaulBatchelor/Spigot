@@ -2,7 +2,9 @@
 _spigot "./spigot.so" fl
 _clk var
 _expr var
-0 58 4 clock dup _clk set
+_highs var
+_bpm 52 varset 
+0 _bpm get 4 clock dup _clk set
 
 1
 "ex/tracker.rnt"
@@ -38,7 +40,7 @@ _expr get 0.3 1.6 scale fm 1 _gates tget 0.01 0.1 1 0.2 adsr *
 fm 3 _gates tget 0.01 0.1 1 0.2 adsr *
 
 + + 100 buthp
-
+dup _highs set
 # the bass
 +
 
@@ -49,6 +51,8 @@ _expr get 400 8000 scale butlp
 _play get *
 
 dup 1000 buthp dup 0.94 10000 revsc drop -20 ampdb * + dcblk
+
+_highs get 0.6 _bpm get bpm2dur 0.75 * delay 1000 buthp -15 ampdb * +
 
 dup
 
