@@ -802,7 +802,6 @@ static void load_tracker_file(spigot_tracker *t)
         runt_parse_file(t->vm, t->filename);
         return_to_zero(t);
     }
-    runt_print(t->vm, "there are %d sequences\n", t->nseq);
 }
 
 static void save_tracker_file(spigot_tracker *t)
