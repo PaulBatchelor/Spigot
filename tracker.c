@@ -13,6 +13,12 @@
 #define MAX_PAGES 64 
 #define NROWS 19
 
+enum {
+PLAYMODE_PAGE,
+PLAYMODE_SONG,
+PLAYMODE_INPLACE,
+};
+
 typedef struct {
     int note;
     int op;
@@ -50,6 +56,7 @@ typedef struct {
     int step;
     int nseq;
     int seqpos;
+    int playmode;
 } spigot_tracker;
 
 static void init_note(tracker_note *note)
@@ -100,6 +107,7 @@ static void init_tracker(void *ud)
     st->oct = 4;
     st->step = 1;
     st->seqpos = 0;
+    st->playmode = PLAYMODE_SONG;
 }
 
 static void insert_note(spigot_tracker *t, int pos, int note)
@@ -375,7 +383,6 @@ static void calculate_offsets(spigot_tracker *t)
 {
     if(t->row == PATSIZE) {
         t->offset = 0;
-        t->row = 0;
     } else if((t->row - t->offset) >= NROWS){
         t->offset += NROWS;
     } else if((t->row < t->offset) &&  t->row >= 0) {
@@ -578,14 +585,22 @@ static void tracker_step(void *ud)
     tracker_note *nt;
     int i;
     t = ud;
-    pg = get_current_page(t);
     if(t->isplaying) {
         t->isrolling = 1;
         if(t->isstarted == 1) {
             t->isstarted = 0;
         } else {
             t->row++;
+            if(t->row >= PATSIZE) {
+                t->row = 0;
+                if(t->playmode == PLAYMODE_SONG) {
+                    t->seqpos++;
+                    t->seqpos %= t->nseq;
+                    t->page = t->seq[t->seqpos];
+                }
+            }
             calculate_offsets(t);
+            pg = get_current_page(t);
         }
 
         for(i = 0; i < NCHAN; i++) {
@@ -935,22 +950,40 @@ static int rproc_insert(runt_vm *vm, runt_ptr p)
     return RUNT_OK;
 }
 
-static void toggle(void *ud)
+static void toggle_playmode(spigot_tracker *t, int playmode)
 {
-    spigot_tracker *t;
     int i;
-    t = ud;
     if(t->isplaying) {
         t->isplaying = 0;
         t->isrolling = 0;
     } else {
+        for(i = 0; i < NCHAN; i++) t->gates[i] = 0;
         t->isplaying = 1;
         t->isstarted = 1;
-        t->row = 0;
-        t->offset = 0;
-        for(i = 0; i < NCHAN; i++) t->gates[i] = 0;
-    }
+        switch(playmode) {
+            case PLAYMODE_SONG:
+                t->seqpos = 0;
+                t->page = t->seq[t->seqpos];
+            case PLAYMODE_PAGE:
+                t->row = 0;
+                t->offset = 0;
+                printf("are we here?\n");
+                break;
+            case PLAYMODE_INPLACE: 
+                break;
+            default: 
+                break;
+        }
 
+        t->playmode = playmode;
+    }
+}
+
+static void toggle(void *ud)
+{
+    spigot_tracker *t;
+    t = ud;
+    toggle_playmode(t, PLAYMODE_SONG);
 }
 
 static void left(void *ud)
@@ -1040,8 +1073,13 @@ static void keyhandler(spigot_graphics *gfx, void *ud,
                     delete_sequence(t);
                     spigot_gfx_step(gfx);
                     break;
+                case GLFW_KEY_SPACE:
+                    toggle_playmode(t, PLAYMODE_INPLACE);
+                    break;
             }
-        } else {
+        } else if(mods == GLFW_MOD_ALT) {
+
+        }else {
             switch(key) {
                 case GLFW_KEY_Q:
                     insert_note(t, t->row, 12 * (t->oct + 1));
@@ -1157,6 +1195,9 @@ static void keyhandler(spigot_graphics *gfx, void *ud,
                     t->nseq++;
                     t->seqpos++;
                     t->page = t->seq[t->seqpos] = t->seq[t->seqpos - 1];
+                    break;
+                case GLFW_KEY_ENTER:
+                    toggle_playmode(t, PLAYMODE_SONG);
                     break;
                 default:
                     break;

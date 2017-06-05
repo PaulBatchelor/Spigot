@@ -10,7 +10,7 @@ _clk var
 _spigot fe 
 
 
-0 _notes tget 0.001 port mtof 0.3  1 1 1 fm 0 _gates tget 0.01 port * 
+0 _notes tget "note" print 0.001 port mtof 0.3  1 1 1 fm 0 _gates tget 0.01 port * 
 
 1 _notes tget 0.001 port mtof 0.3  1 1 1 fm 1 _gates tget 0.01 port * 
 

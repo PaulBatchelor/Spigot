@@ -26,22 +26,33 @@
 66 40 tracker_note
 69 44 tracker_note
 67 52 tracker_note
-76 60 tracker_note
 
 3 tracker_chan
 71 48 tracker_note
 73 56 tracker_note
+76 60 tracker_note
 
 4 tracker_chan
 
 1 tracker_page
 0 tracker_chan
+50 0 tracker_note
+9 tracker_noteoff
 
 1 tracker_chan
+61 0 tracker_note
+62 4 tracker_note
+9 tracker_noteoff
 
 2 tracker_chan
+67 0 tracker_note
+66 4 tracker_note
+9 tracker_noteoff
 
 3 tracker_chan
+76 0 tracker_note
+74 4 tracker_note
+9 tracker_noteoff
 
 4 tracker_chan
 
