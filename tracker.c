@@ -20,6 +20,7 @@ typedef struct {
 
 typedef struct {
     tracker_note notes[PATSIZE * NCHAN];
+    char active;
 } tracker_page; 
 
 typedef struct {
@@ -48,6 +49,7 @@ typedef struct {
     int loaded;
     int step;
     int nseq;
+    int seqpos;
 } spigot_tracker;
 
 static void init_note(tracker_note *note)
@@ -60,6 +62,7 @@ static void init_page(tracker_page *page)
 {
     int i;
 
+    page->active = 0;
     for(i = 0; i < PATSIZE * NCHAN; i++) {
         init_note(&page->notes[i]);
     }
@@ -96,10 +99,7 @@ static void init_tracker(void *ud)
     }
     st->oct = 4;
     st->step = 1;
-
-    /* temporary: by default add one page to the sequance. */
-    st->nseq = 1;
-    st->seq[0] = 0;
+    st->seqpos = 0;
 }
 
 static void insert_note(spigot_tracker *t, int pos, int note)
@@ -326,7 +326,7 @@ static void draw_page(spigot_graphics *gfx, spigot_tracker *t)
     spigot_color *clr;
 
     pg = &t->pages[t->page];
-
+    
     row_min = t->offset;
     row_max = t->offset + NROWS; 
     if(row_max > PATSIZE) row_max = PATSIZE;
@@ -464,6 +464,15 @@ static void redraw(spigot_graphics *gfx, void *ud)
 
     draw_row_numbers(gfx, t);
 
+    for(i = 0; i < t->nseq; i++) {
+        draw_number(gfx, &t->foreground, 32 + 5 + 16*i, 22 * 8 + 6, t->seq[i]);
+    }
+
+    spigot_draw_glyph(gfx, &t->foreground, 32 + 16*t->seqpos, 22 * 8, 
+            17, 17,
+            IMG_TRACKER_ASSETS_WIDTH, 
+            tracker_assets + 8 * IMG_TRACKER_ASSETS_WIDTH + 7 * 8);
+
     /* draw scroll bar dividers */
     spigot_draw_hline(gfx, &t->foreground, 32, 22 * 8, 16);
     spigot_draw_hline(gfx, &t->foreground, 19 * 8, 22 * 8, 16);
@@ -475,7 +484,6 @@ static void redraw(spigot_graphics *gfx, void *ud)
     draw_arrow_up(gfx, &t->foreground, 22 * 8, 2 * 8);
     draw_arrow_down(gfx, &t->foreground, 22 * 8, 19 * 8);
 
-    /* t->pages[0].notes[1].note = 71; */
     draw_page(gfx, t);
 }
 
@@ -523,6 +531,32 @@ static int rproc_chan(runt_vm *vm, runt_ptr p)
     RUNT_ERROR_CHECK(rc);
     chan = s->f;
     t->chan = chan;
+
+    return RUNT_OK;
+}
+
+static int rproc_page(runt_vm *vm, runt_ptr p)
+{
+    runt_int rc;
+    runt_stacklet *s;
+    runt_spigot_data *rsd;
+    spigot_tracker *t;
+    runt_int page;
+
+    rsd = runt_to_cptr(p);
+
+    if(rsd->loaded == 0) {
+        runt_print(vm, "tracker_chan: state not set yet!\n");
+        return RUNT_NOT_OK;
+    } else if(rsd->state->type != SPIGOT_TRACKER) {
+        runt_print(vm, "tracker_chan: this is not a tracker!\n");
+    }
+
+    t = rsd->state->ud;
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    page = s->f;
+    t->page = page;
 
     return RUNT_OK;
 }
@@ -730,6 +764,15 @@ static int rproc_play(runt_vm *vm, runt_ptr p)
     return RUNT_OK;
 }
 
+static void return_to_zero(spigot_tracker *t)
+{
+    t->row = 0;
+    t->chan = 0;
+    t->offset = 0;
+    t->page = 0;
+    t->seqpos = 0;
+}
+
 static void load_tracker_file(spigot_tracker *t)
 {
     if(!t->loaded) {
@@ -740,16 +783,17 @@ static void load_tracker_file(spigot_tracker *t)
         runt_print(t->vm, "Loading file %s\n", t->filename);
         init_sequence_data(t);
         runt_parse_file(t->vm, t->filename);
-        t->row = 0;
-        t->chan = 0;
-        t->offset = 0;
+        return_to_zero(t);
     }
+    runt_print(t->vm, "there are %d sequences\n", t->nseq);
 }
 
 static void save_tracker_file(spigot_tracker *t)
 {
     FILE *fp;
     int row, chan;
+    int page;
+    int seq;
     tracker_page *pg;
     tracker_note *nt;
 
@@ -763,23 +807,39 @@ static void save_tracker_file(spigot_tracker *t)
         runt_print(t->vm, "There was a problem writing to %s.\n", t->filename);
         return;
     }
+   
+    /* mark active pages in sequence */
+
+    for(seq = 0; seq < t->nseq; seq++) {
+        t->pages[t->seq[seq]].active = 1;
+    }
+
+    for(page = 0; page < MAX_PAGES; page++) {
+        pg = &t->pages[page];
+        if(pg->active == 0) continue; 
+        fprintf(fp, "%d tracker_page\n", page);
+        for(chan = 0; chan < NCHAN; chan++) {
+            fprintf(fp, "%d tracker_chan\n", chan);
+            for(row = 0; row < PATSIZE; row++) {
+                nt = get_note_from_page(pg, row, chan);
+                if(nt->note >= 0) {
+                    fprintf(fp, "%d %d tracker_note\n", nt->note, row);
+                } else if(nt->note == -2) {
+                    fprintf(fp, "%d tracker_noteoff\n", row);
+                }
+            }
+            fprintf(fp, "\n");
+        }
+    }
+    
+    /* save sequence */
+    fprintf(fp, "tracker_seq\n");
+    for(seq = 0; seq < t->nseq; seq++) {
+        t->pages[t->seq[seq]].active = 0;
+        fprintf(fp, "%d tracker_insert\n", t->seq[seq]);
+    }
     
     runt_print(t->vm, "File saved to %s.\n", t->filename);
-
-    pg = &t->pages[0];
-
-    for(chan = 0; chan < NCHAN; chan++) {
-        fprintf(fp, "%d tracker_chan\n", chan);
-        for(row = 0; row < PATSIZE; row++) {
-            nt = get_note_from_page(pg, row, chan);
-            if(nt->note >= 0) {
-                fprintf(fp, "%d %d tracker_note\n", nt->note, row);
-            } else if(nt->note == -2) {
-                fprintf(fp, "%d tracker_noteoff\n", row);
-            }
-        }
-        fprintf(fp, "\n");
-    }
 
     fclose(fp);
 }
@@ -821,9 +881,64 @@ static int rproc_load(runt_vm *vm, runt_ptr p)
     return RUNT_OK;
 }
 
+static int rproc_seq(runt_vm *vm, runt_ptr p)
+{
+    runt_spigot_data *rsd;
+    spigot_tracker *t;
+
+    rsd = runt_to_cptr(p);
+
+    if(rsd->loaded == 0) {
+        runt_print(vm, "Please load a state first.\n");
+        return RUNT_NOT_OK;
+    }
+
+    if(rsd->state->type != SPIGOT_TRACKER) {
+        runt_print(vm, "State type is not a tracker.\n");
+        return RUNT_NOT_OK;
+    }
+    
+    t = rsd->state->ud;
+
+    t->seqpos = 0;
+    t->nseq = 0;
+
+    return RUNT_OK;
+}
+
+static int rproc_insert(runt_vm *vm, runt_ptr p)
+{
+    runt_int rc;
+    runt_stacklet *s;
+    runt_spigot_data *rsd;
+    spigot_tracker *t;
+    runt_int page;
+
+    rsd = runt_to_cptr(p);
+
+    if(rsd->loaded == 0) {
+        runt_print(vm, "tracker_note: state not set yet!\n");
+        return RUNT_NOT_OK;
+    } else if(rsd->state->type != SPIGOT_TRACKER) {
+        runt_print(vm, "tracker_note: this is not a tracker!\n");
+    }
+
+    t = rsd->state->ud;
+    
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    page = s->f;
+
+    t->seq[t->seqpos] = page;
+    t->seqpos++;
+    t->nseq++;
+    return RUNT_OK;
+}
+
 static void toggle(void *ud)
 {
     spigot_tracker *t;
+    int i;
     t = ud;
     if(t->isplaying) {
         t->isplaying = 0;
@@ -833,6 +948,7 @@ static void toggle(void *ud)
         t->isstarted = 1;
         t->row = 0;
         t->offset = 0;
+        for(i = 0; i < NCHAN; i++) t->gates[i] = 0;
     }
 
 }
@@ -885,6 +1001,30 @@ static void keyhandler(spigot_graphics *gfx, void *ud,
                     break;
                 case GLFW_KEY_EQUAL:
                     t->step += 1;
+                    break;
+                case GLFW_KEY_L:
+                    t->seqpos += 1;
+                    if(t->seqpos >= t->nseq) t->seqpos = t->nseq - 1;
+                    t->page = t->seq[t->seqpos];
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_H:
+                    t->seqpos -= 1;
+                    if(t->seqpos < 0) t->seqpos = 0;
+                    t->page = t->seq[t->seqpos];
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_K:
+                    t->page++;
+                    if(t->page >= MAX_PAGES) t->page = 0;
+                    t->seq[t->seqpos] = t->page;
+                    spigot_gfx_step(gfx);
+                    break;
+                case GLFW_KEY_J:
+                    t->page--;
+                    if(t->page < 0) t->page = MAX_PAGES - 1;
+                    t->seq[t->seqpos] = t->page;
+                    spigot_gfx_step(gfx);
                     break;
             }
         } else {
@@ -999,6 +1139,11 @@ static void keyhandler(spigot_graphics *gfx, void *ud,
                     t->step -= 1;
                     if(t->step <= 0) t->step = 0;
                     break;
+                case GLFW_KEY_N:
+                    t->nseq++;
+                    t->seqpos++;
+                    t->page = t->seq[t->seqpos] = t->seq[t->seqpos - 1];
+                    break;
                 default:
                     break;
             }
@@ -1010,11 +1155,14 @@ int spigot_tracker_runt(runt_vm *vm, runt_ptr p)
 {
     spigot_word_define(vm, p, "tracker_note", 12, rproc_note);
     spigot_word_define(vm, p, "tracker_chan", 12, rproc_chan);
+    spigot_word_define(vm, p, "tracker_page", 12, rproc_page);
     spigot_word_define(vm, p, "tracker_notes", 13, rproc_notes);
     spigot_word_define(vm, p, "tracker_noteoff", 15, rproc_noteoff);
     spigot_word_define(vm, p, "tracker_gates", 13, rproc_gates);
     spigot_word_define(vm, p, "tracker_play", 12, rproc_play);
     spigot_word_define(vm, p, "tracker_open", 12, rproc_load);
+    spigot_word_define(vm, p, "tracker_seq", 11, rproc_seq);
+    spigot_word_define(vm, p, "tracker_insert", 14, rproc_insert);
     return runt_is_alive(vm);
 }
 
@@ -1039,4 +1187,5 @@ void spigot_tracker_state(plumber_data *pd, runt_vm *vm, spigot_state *state)
     t = state->ud;
     init_sequence_data(t);
     t->vm = vm;
+    t->nseq = 1;
 }

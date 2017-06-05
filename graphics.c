@@ -118,35 +118,37 @@ static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
     state = gfx->state;
 
     if(action == GLFW_PRESS || action == GLFW_REPEAT) {
-        switch(key) {
-            case GLFW_KEY_SPACE:
-                state->toggle(state->ud);
-                gfx->please_draw = 1;
-                break;
-            case GLFW_KEY_H:
-                state->left(state->ud);
-                gfx->please_draw = 1;
-                break;
-            case GLFW_KEY_L:
-                state->right(state->ud);
-                gfx->please_draw = 1;
-                break;
-            case GLFW_KEY_J:
-                state->down(state->ud);
-                gfx->please_draw = 1;
-                break;
-            case GLFW_KEY_K:
-                state->up(state->ud);
-                gfx->please_draw = 1;
-                break;
-            case GLFW_KEY_Z:
-                state->reset(state->ud);
-                gfx->please_draw = 1;
-                break;
-            default:
-                state->key(gfx, state->ud, key, scancode, action, mods);
-                break;
+        if(mods != GLFW_MOD_SHIFT) {
+            switch(key) {
+                case GLFW_KEY_SPACE:
+                    state->toggle(state->ud);
+                    gfx->please_draw = 1;
+                    break;
+                case GLFW_KEY_H:
+                    state->left(state->ud);
+                    gfx->please_draw = 1;
+                    break;
+                case GLFW_KEY_L:
+                    state->right(state->ud);
+                    gfx->please_draw = 1;
+                    break;
+                case GLFW_KEY_J:
+                    state->down(state->ud);
+                    gfx->please_draw = 1;
+                    break;
+                case GLFW_KEY_K:
+                    state->up(state->ud);
+                    gfx->please_draw = 1;
+                    break;
+                case GLFW_KEY_Z:
+                    state->reset(state->ud);
+                    gfx->please_draw = 1;
+                    break;
+                default:
+                    break;
+            }
         }
+        state->key(gfx, state->ud, key, scancode, action, mods);
     }
 }
 
