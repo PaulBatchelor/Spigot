@@ -1,4 +1,5 @@
 #include <soundpipe.h>
+#include <math.h>
 #include <sporth.h>
 #include <stdlib.h>
 #include <GLFW/glfw3.h>
@@ -396,6 +397,8 @@ static void redraw(spigot_graphics *gfx, void *ud)
 {
     spigot_tracker *t;
     int i;
+    float size;
+    float progress;
     
     t = ud;
   
@@ -403,6 +406,20 @@ static void redraw(spigot_graphics *gfx, void *ud)
     /* fill background */
     spigot_draw_fill(gfx, &t->background);
    
+
+    /* draw scrollbar rect */
+    spigot_draw_rect(gfx, &t->shade, 22 * 8, 32, 16, 15 * 8); 
+
+    size = ((float)NROWS / PATSIZE) * 15 * 8;
+    progress = (14 * 8)   * ((float)t->offset / PATSIZE);
+
+    if(progress + size > 14 * 8) progress = floor((15 * 8) - size + 0.5) + 1;
+
+    spigot_draw_rect(gfx, &t->background, 
+        22 * 8, 
+        32 + progress, 
+        16, size); 
+
     /* draw dark row lines */
 
     for(i = 0; i < 10; i++) {
@@ -492,6 +509,7 @@ static void redraw(spigot_graphics *gfx, void *ud)
     
     draw_arrow_up(gfx, &t->foreground, 22 * 8, 2 * 8);
     draw_arrow_down(gfx, &t->foreground, 22 * 8, 19 * 8);
+
 
     draw_page(gfx, t);
 }
