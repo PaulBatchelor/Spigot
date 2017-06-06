@@ -419,6 +419,22 @@ static void redraw(spigot_graphics *gfx, void *ud)
         22 * 8, 
         32 + progress, 
         16, size); 
+    
+    /* draw scollbar arrows */
+    draw_arrow_left(gfx, &t->foreground, 16, 22 * 8);
+    draw_arrow_right(gfx, &t->foreground, 20 * 8, 22 * 8);
+   
+    if(t->offset == 0) {
+        draw_arrow_up(gfx, &t->shade, 22 * 8, 2 * 8);
+    } else {
+        draw_arrow_up(gfx, &t->foreground, 22 * 8, 2 * 8);
+    }
+
+    if(t->offset >= 57) {
+        draw_arrow_down(gfx, &t->shade, 22 * 8, 19 * 8);
+    } else {
+        draw_arrow_down(gfx, &t->foreground, 22 * 8, 19 * 8);
+    }
 
     /* draw dark row lines */
 
@@ -503,12 +519,6 @@ static void redraw(spigot_graphics *gfx, void *ud)
     spigot_draw_hline(gfx, &t->foreground, 32, 22 * 8, 16);
     spigot_draw_hline(gfx, &t->foreground, 19 * 8, 22 * 8, 16);
 
-    /* draw scollbar arrows */
-    draw_arrow_left(gfx, &t->foreground, 16, 22 * 8);
-    draw_arrow_right(gfx, &t->foreground, 20 * 8, 22 * 8);
-    
-    draw_arrow_up(gfx, &t->foreground, 22 * 8, 2 * 8);
-    draw_arrow_down(gfx, &t->foreground, 22 * 8, 19 * 8);
 
 
     draw_page(gfx, t);
