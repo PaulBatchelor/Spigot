@@ -4,9 +4,9 @@ _clk var
 _expr var
 _highs var
 _tick var
-_bpm 52 varset 
+_bpm 54 varset 
 tick _tick set
-0 _bpm get 4 clock 0 * _tick get +  dup _clk set
+0 _bpm get 4 clock dup _clk set
 
 1
 "ex/tracker.rnt"
