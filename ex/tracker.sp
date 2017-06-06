@@ -3,15 +3,17 @@ _spigot "./spigot.so" fl
 _clk var
 _expr var
 _highs var
+_tick var
 _bpm 52 varset 
-0 _bpm get 4 clock dup _clk set
+tick _tick set
+0 _bpm get 4 clock 0 * _tick get +  dup _clk set
 
 1
 "ex/tracker.rnt"
 
 _spigot fe 
 
-tick _play get 0.5 0 thresh + 0 10 1 line _expr set 
+_tick get _play get 0.5 0 thresh + 0 10 1 line _expr set 
 
 0 _notes tget 0 _gates tget 0.5 0 thresh 0.05 tport 
 0.1 1 3 jitter + dup 0 pset

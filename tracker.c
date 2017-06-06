@@ -58,6 +58,7 @@ typedef struct {
     int nseq;
     int seqpos;
     int playmode;
+    int seq_offset;
 } spigot_tracker;
 
 static void init_note(tracker_note *note)
@@ -109,6 +110,7 @@ static void init_tracker(void *ud)
     st->step = 1;
     st->seqpos = 0;
     st->playmode = PLAYMODE_SONG;
+    st->seq_offset = 0;
 }
 
 static void insert_note(spigot_tracker *t, int pos, int note)
@@ -399,6 +401,7 @@ static void redraw(spigot_graphics *gfx, void *ud)
     int i;
     float size;
     float progress;
+    int off;
     
     t = ud;
   
@@ -420,21 +423,6 @@ static void redraw(spigot_graphics *gfx, void *ud)
         32 + progress, 
         16, size); 
     
-    /* draw scollbar arrows */
-    draw_arrow_left(gfx, &t->foreground, 16, 22 * 8);
-    draw_arrow_right(gfx, &t->foreground, 20 * 8, 22 * 8);
-   
-    if(t->offset == 0) {
-        draw_arrow_up(gfx, &t->shade, 22 * 8, 2 * 8);
-    } else {
-        draw_arrow_up(gfx, &t->foreground, 22 * 8, 2 * 8);
-    }
-
-    if(t->offset >= 57) {
-        draw_arrow_down(gfx, &t->shade, 22 * 8, 19 * 8);
-    } else {
-        draw_arrow_down(gfx, &t->foreground, 22 * 8, 19 * 8);
-    }
 
     /* draw dark row lines */
 
@@ -506,11 +494,50 @@ static void redraw(spigot_graphics *gfx, void *ud)
 
     draw_row_numbers(gfx, t);
 
-    for(i = 0; i < t->nseq; i++) {
-        draw_number(gfx, &t->foreground, 32 + 5 + 16*i, 22 * 8 + 6, t->seq[i]);
+    /* figure out seq_offset for drawing */
+
+    if((t->seqpos - t->seq_offset) > 7) {
+        t->seq_offset++;
+    } else if((t->seqpos - t->seq_offset) < 0) {
+        t->seq_offset--;
+    }
+    
+    /* draw scollbar arrows */
+    if(t->seq_offset == 0) {
+        draw_arrow_left(gfx, &t->shade, 16, 22 * 8);
+    } else {
+        draw_arrow_left(gfx, &t->foreground, 16, 22 * 8);
     }
 
-    spigot_draw_glyph(gfx, &t->foreground, 32 + 16*t->seqpos, 22 * 8, 
+    draw_arrow_right(gfx, &t->foreground, 20 * 8, 22 * 8);
+   
+    if(t->offset == 0) {
+        draw_arrow_up(gfx, &t->shade, 22 * 8, 2 * 8);
+    } else {
+        draw_arrow_up(gfx, &t->foreground, 22 * 8, 2 * 8);
+    }
+
+    if(t->offset >= 57) {
+        draw_arrow_down(gfx, &t->shade, 22 * 8, 19 * 8);
+    } else {
+        draw_arrow_down(gfx, &t->foreground, 22 * 8, 19 * 8);
+    }
+
+    for(i = 0; i < (t->nseq > 8 ? 8 : t->nseq); i++) {
+        draw_number(gfx, &t->foreground, 32 + 5 + 16*i, 22 * 8 + 6, 
+                t->seq[i + t->seq_offset]);
+    }
+
+
+    if((t->seqpos - t->seq_offset) > 7) {
+        off = 7;
+    } else {
+        off = t->seqpos - t->seq_offset;
+    }
+
+    spigot_draw_glyph(gfx, &t->foreground, 
+            32 + 16*off, 
+            22 * 8, 
             17, 17,
             IMG_TRACKER_ASSETS_WIDTH, 
             tracker_assets + 8 * IMG_TRACKER_ASSETS_WIDTH + 7 * 8);
@@ -518,8 +545,6 @@ static void redraw(spigot_graphics *gfx, void *ud)
     /* draw scroll bar dividers */
     spigot_draw_hline(gfx, &t->foreground, 32, 22 * 8, 16);
     spigot_draw_hline(gfx, &t->foreground, 19 * 8, 22 * 8, 16);
-
-
 
     draw_page(gfx, t);
 }
@@ -1059,6 +1084,17 @@ static void delete_sequence(spigot_tracker *t)
     t->page = t->seq[t->seqpos];
 }
 
+static void insert_sequence(spigot_tracker *t)
+{
+    int i;
+    for(i = t->nseq; i > t->seqpos + 1; i--) {
+        t->seq[i] = t->seq[i - 1];
+    }
+    t->nseq++;
+    t->seqpos++;
+    t->page = t->seq[t->seqpos] = t->seq[t->seqpos - 1];
+}
+
 static void keyhandler(spigot_graphics *gfx, void *ud, 
         int key, int scancode, int action, int mods)
 {
@@ -1097,12 +1133,17 @@ static void keyhandler(spigot_graphics *gfx, void *ud,
                     if(t->page < 0) t->page = MAX_PAGES - 1;
                     t->seq[t->seqpos] = t->page;
                     spigot_gfx_step(gfx);
+                    break;
                 case GLFW_KEY_X:
                     delete_sequence(t);
                     spigot_gfx_step(gfx);
                     break;
                 case GLFW_KEY_SPACE:
                     toggle_playmode(t, PLAYMODE_INPLACE);
+                    break;
+                case GLFW_KEY_N:
+                    insert_sequence(t);
+                    spigot_gfx_step(gfx);
                     break;
             }
         } else if(mods == GLFW_MOD_ALT) {
@@ -1218,11 +1259,6 @@ static void keyhandler(spigot_graphics *gfx, void *ud,
                 case GLFW_KEY_MINUS:
                     t->step -= 1;
                     if(t->step <= 0) t->step = 0;
-                    break;
-                case GLFW_KEY_N:
-                    t->nseq++;
-                    t->seqpos++;
-                    t->page = t->seq[t->seqpos] = t->seq[t->seqpos - 1];
                     break;
                 case GLFW_KEY_ENTER:
                     toggle_playmode(t, PLAYMODE_SONG);
