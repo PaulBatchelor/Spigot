@@ -1,0 +1,92 @@
+0 tracker_page
+0 tracker_chan
+60 0 tracker_note
+
+1 tracker_chan
+63 0 tracker_note
+
+2 tracker_chan
+70 0 tracker_note
+68 16 tracker_note
+67 32 tracker_note
+
+3 tracker_chan
+60 0 tracker_note
+1 tracker_noteoff
+63 2 tracker_note
+3 tracker_noteoff
+63 4 tracker_note
+5 tracker_noteoff
+60 6 tracker_note
+74 7 tracker_note
+10 tracker_noteoff
+60 12 tracker_note
+13 tracker_noteoff
+63 14 tracker_note
+15 tracker_noteoff
+60 16 tracker_note
+17 tracker_noteoff
+63 18 tracker_note
+19 tracker_noteoff
+63 20 tracker_note
+21 tracker_noteoff
+60 22 tracker_note
+74 23 tracker_note
+26 tracker_noteoff
+60 28 tracker_note
+29 tracker_noteoff
+63 30 tracker_note
+31 tracker_noteoff
+60 32 tracker_note
+33 tracker_noteoff
+63 34 tracker_note
+35 tracker_noteoff
+63 36 tracker_note
+37 tracker_noteoff
+60 38 tracker_note
+70 39 tracker_note
+42 tracker_noteoff
+60 44 tracker_note
+45 tracker_noteoff
+63 46 tracker_note
+47 tracker_noteoff
+60 48 tracker_note
+49 tracker_noteoff
+63 50 tracker_note
+51 tracker_noteoff
+63 52 tracker_note
+53 tracker_noteoff
+60 54 tracker_note
+70 55 tracker_note
+58 tracker_noteoff
+60 60 tracker_note
+61 tracker_noteoff
+63 62 tracker_note
+63 tracker_noteoff
+
+4 tracker_chan
+36 0 tracker_note
+1 tracker_noteoff
+36 3 tracker_note
+4 tracker_noteoff
+36 16 tracker_note
+17 tracker_noteoff
+36 19 tracker_note
+20 tracker_noteoff
+39 28 tracker_note
+43 29 tracker_note
+31 tracker_noteoff
+36 32 tracker_note
+33 tracker_noteoff
+36 35 tracker_note
+36 tracker_noteoff
+36 48 tracker_note
+49 tracker_noteoff
+36 51 tracker_note
+52 tracker_noteoff
+36 60 tracker_note
+61 tracker_noteoff
+48 62 tracker_note
+
+tracker_seq
+0 tracker_insert

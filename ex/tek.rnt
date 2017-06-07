@@ -1,0 +1,22 @@
+new_state tracker spigot_state
+
+# open file for read/write
+"ex/tekscore.rnt" tracker_open
+
+# set zoom level to 3
+2 spigot_zoom 
+
+# Create Sporth table for note data
+"notes" tracker_notes
+
+# Create Sporth table for gate data
+"gates" tracker_gates
+
+# Create variable that is a gate for start/stop
+"play" tracker_play
+
+210 237 57 tracker_row
+210 237 57 tracker_text
+23 28 11 tracker_bgcolor
+40 42 32 tracker_shade
+158 186 1 tracker_fgcolor
