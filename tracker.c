@@ -37,7 +37,6 @@ typedef struct {
     spigot_color shade;
     spigot_color row_selected;
     spigot_color text_selected;
-    spigot_color column_selected;
 
     tracker_page pages[MAX_PAGES];
     int seq[MAX_SEQUENCES];
@@ -555,12 +554,6 @@ static void init_tracker_gfx(spigot_graphics *gfx, void *ud)
 
     t = ud;
 
-    spigot_color_rgb(&t->background, 130, 195, 255);
-    spigot_color_rgb(&t->foreground, 0, 65, 130);
-    spigot_color_rgb(&t->shade, 52, 158, 255);
-    spigot_color_rgb(&t->row_selected, 255, 119, 171);
-    spigot_color_rgb(&t->text_selected, 255, 255, 255);
-
     redraw(gfx, t);
 }
 
@@ -1032,6 +1025,103 @@ static void toggle_playmode(spigot_tracker *t, int playmode)
     }
 }
 
+static int get_tracker_data(runt_vm *vm, runt_ptr p, spigot_tracker **t)
+{
+    runt_spigot_data *rsd;
+
+    rsd = runt_to_cptr(p);
+
+    if(rsd->loaded == 0) {
+        runt_print(vm, "tracker_note: state not set yet!\n");
+        return RUNT_NOT_OK;
+    } else if(rsd->state->type != SPIGOT_TRACKER) {
+        runt_print(vm, "tracker_note: this is not a tracker!\n");
+        return RUNT_NOT_OK;
+    }
+
+    *t = rsd->state->ud;
+    return RUNT_OK;
+}
+
+static int set_color(runt_vm *vm, runt_ptr p, spigot_color *c)
+{
+    runt_int rc;
+    runt_stacklet *s;
+    runt_int r, g, b;
+    
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    b = s->f;
+    
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    g = s->f;
+    
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    r = s->f;
+
+    c->r = r;
+    c->g = g;
+    c->b = b;
+    return RUNT_OK;
+}
+
+static int rproc_bgcolor(runt_vm *vm, runt_ptr p)
+{
+    runt_int rc;
+    spigot_tracker *t;
+
+    rc = get_tracker_data(vm, p, &t);
+    RUNT_ERROR_CHECK(rc);
+   
+    return set_color(vm, p, &t->background);
+}
+
+static int rproc_fgcolor(runt_vm *vm, runt_ptr p)
+{
+    runt_int rc;
+    spigot_tracker *t;
+
+    rc = get_tracker_data(vm, p, &t);
+    RUNT_ERROR_CHECK(rc);
+   
+    return set_color(vm, p, &t->foreground);
+}
+
+static int rproc_shade(runt_vm *vm, runt_ptr p)
+{
+    runt_int rc;
+    spigot_tracker *t;
+
+    rc = get_tracker_data(vm, p, &t);
+    RUNT_ERROR_CHECK(rc);
+   
+    return set_color(vm, p, &t->shade);
+}
+
+static int rproc_row(runt_vm *vm, runt_ptr p)
+{
+    runt_int rc;
+    spigot_tracker *t;
+
+    rc = get_tracker_data(vm, p, &t);
+    RUNT_ERROR_CHECK(rc);
+   
+    return set_color(vm, p, &t->row_selected);
+}
+
+static int rproc_text(runt_vm *vm, runt_ptr p)
+{
+    runt_int rc;
+    spigot_tracker *t;
+
+    rc = get_tracker_data(vm, p, &t);
+    RUNT_ERROR_CHECK(rc);
+   
+    return set_color(vm, p, &t->text_selected);
+}
+
 static void toggle(void *ud)
 {
     spigot_tracker *t;
@@ -1282,6 +1372,11 @@ int spigot_tracker_runt(runt_vm *vm, runt_ptr p)
     spigot_word_define(vm, p, "tracker_open", 12, rproc_load);
     spigot_word_define(vm, p, "tracker_seq", 11, rproc_seq);
     spigot_word_define(vm, p, "tracker_insert", 14, rproc_insert);
+    spigot_word_define(vm, p, "tracker_bgcolor", 15, rproc_bgcolor);
+    spigot_word_define(vm, p, "tracker_fgcolor", 15, rproc_fgcolor);
+    spigot_word_define(vm, p, "tracker_shade", 13, rproc_shade);
+    spigot_word_define(vm, p, "tracker_row", 11, rproc_row);
+    spigot_word_define(vm, p, "tracker_text", 12, rproc_text);
     return runt_is_alive(vm);
 }
 
@@ -1307,4 +1402,9 @@ void spigot_tracker_state(plumber_data *pd, runt_vm *vm, spigot_state *state)
     init_sequence_data(t);
     t->vm = vm;
     t->nseq = 1;
+    spigot_color_rgb(&t->background, 130, 195, 255);
+    spigot_color_rgb(&t->foreground, 0, 65, 130);
+    spigot_color_rgb(&t->shade, 52, 158, 255);
+    spigot_color_rgb(&t->row_selected, 255, 119, 171);
+    spigot_color_rgb(&t->text_selected, 255, 255, 255);
 }
