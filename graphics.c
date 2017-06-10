@@ -22,6 +22,8 @@ struct spigot_graphics {
     unsigned char *buf;
     spigot_state *state;
     int zoom;
+    int state_loaded;
+    int begin;
 };
 
 void spigot_color_rgb(spigot_color *clr, uint8_t r, uint8_t g, uint8_t b)
@@ -254,6 +256,8 @@ spigot_graphics * spigot_gfx_new(int zoom)
     gfx = malloc(sizeof(spigot_graphics));
     gfx->buf = malloc(193 * 193 * 3 * sizeof(unsigned char));
     gfx->zoom = zoom;
+    gfx->state_loaded = 0;
+    gfx->begin = 0;
     return gfx;
 }
 
@@ -271,6 +275,7 @@ void spigot_gfx_step(spigot_graphics *gfx)
 void spigot_gfx_set_state(spigot_graphics *gfx, spigot_state *state)
 {
     gfx->state = state;
+    gfx->state_loaded = 1;
 }
 
 unsigned char * spigot_graphics_get_buf(spigot_graphics *gfx)
@@ -373,4 +378,24 @@ void spigot_draw_rect(spigot_graphics *gfx, spigot_color *clr,
             buf[pos + 2] = clr->b;
         }
     }
+}
+
+void spigot_start_why_dont_you(spigot_graphics *gfx)
+{
+    gfx->begin = 1;
+}
+
+int spigot_is_it_happening(spigot_graphics *gfx)
+{
+    return gfx->begin;
+}
+
+int spigot_loaded(spigot_graphics *gfx)
+{
+    return gfx->state_loaded;
+}
+
+void spigot_set_zoom(spigot_graphics *gfx, int zoom)
+{
+    gfx->zoom = zoom;
 }

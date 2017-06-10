@@ -1,6 +1,5 @@
 (
 # "util/slider8.sp" load
-_spigot "./spigot.so" fl
 _val var
 _clk var
 # delay feedback 
@@ -52,5 +51,4 @@ dcblk
 
 dup _s7 get * dup 0.94 10000 revsc drop 0.3 * +
 dup
-_spigot fc
 )

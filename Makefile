@@ -11,6 +11,8 @@ CONFIG ?=
 
 include $(CONFIG)
 
+default: spigot
+
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
 

@@ -1,5 +1,4 @@
 (
-_spigot "./spigot.so" fl
 _prop var
 _clk var
 _kick var
@@ -77,6 +76,4 @@ _send get + _send set
 _send get dup 0.97 10000 revsc drop _rms get -30 -10 scale ampdb * +
 
 dup
-
-_spigot fc
 )

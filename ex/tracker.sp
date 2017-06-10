@@ -1,5 +1,4 @@
 (
-_spigot "./spigot.so" fl
 _clk var
 _expr var
 _highs var
@@ -57,6 +56,4 @@ dup 1000 buthp dup 0.94 10000 revsc drop -20 ampdb * + dcblk
 _highs get 0.6 _bpm get bpm2dur 0.75 * delay 1000 buthp -15 ampdb * +
 
 dup
-
-_spigot fc
 )

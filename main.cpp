@@ -4,10 +4,10 @@ extern "C" {
 #include <soundpipe.h>
 #include <sporth.h>
 #include "spigot.h"
+spigot_graphics *global_gfx;
 }
 #include "RtAudio.h"
 
-spigot_graphics *global_gfx;
 
 static int callme( void * outputBuffer, void * inputBuffer, unsigned int numFrames,
             double streamTime, RtAudioStreamStatus status, void * data )
@@ -57,9 +57,11 @@ int main(int argc, char *argv[])
     plumber_register(&pd);
     plumber_init(&pd);
 
+    plumber_ftmap_add_function(&pd, "spigot", sporth_spigot, NULL);
     plumber_open_file(&pd, argv[1]);
     
     pd.sp = sp;
+    global_gfx = spigot_gfx_new(3);
     if(plumber_parse(&pd) != PLUMBER_OK) {
         plumber_print(&pd, "Error.\n");
         goto clean;
@@ -67,9 +69,24 @@ int main(int argc, char *argv[])
         plumber_compute(&pd, PLUMBER_INIT); 
         audio.startStream();
     }
-   
-    sleep(10);
+
+    if(!spigot_loaded(global_gfx)) {
+        plumber_print(&pd, "Spigot state not loaded!\n");
+        goto clean;
+    }
+
+    if(spigot_is_it_happening(global_gfx)) {
+        spigot_gfx_init(global_gfx);
+        spigot_graphics_loop(global_gfx);
+    } else {
+        fgetc(stdin);
+    }
 clean:
+    audio.stopStream();
+    if(spigot_is_it_happening(global_gfx)) {
+        spigot_stop(global_gfx);
+    }
+    spigot_gfx_free(global_gfx);
     plumber_close_file(&pd);
     plumber_clean(&pd);
     sp_destroy(&sp);

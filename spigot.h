@@ -110,5 +110,9 @@ void spigot_word_define(runt_vm *vm, runt_ptr p,
     runt_proc proc);
 
 void spigot_graphics_loop(spigot_graphics *spgt);
-
+void spigot_start_why_dont_you(spigot_graphics *gfx);
+int spigot_is_it_happening(spigot_graphics *gfx);
+int spigot_loaded(spigot_graphics *gfx);
+void spigot_set_zoom(spigot_graphics *gfx, int zoom);
+int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud);
 #endif

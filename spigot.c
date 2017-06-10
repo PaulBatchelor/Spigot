@@ -4,6 +4,8 @@
 
 #include "spigot.h"
 
+extern spigot_graphics *global_gfx;
+
 typedef struct {
     spigot_graphics *gfx;
     int load;
@@ -54,7 +56,7 @@ void spigot_state_init(spigot_state *state)
 
 }
 
-static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
+int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
 {
     const char *filename;
     SPFLOAT in;
@@ -84,7 +86,8 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             zoom = 3;
             rc = spigot_load(pd, &stuff->vm, &stuff->state, filename, &zoom);
 
-            stuff->gfx = spigot_gfx_new(zoom);
+            stuff->gfx = global_gfx;
+            spigot_set_zoom(stuff->gfx, zoom);
 
             spigot_gfx_set_state(stuff->gfx, stuff->state);
 
@@ -105,9 +108,8 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             sporth_stack_pop_float(stack);
             stuff->state->init(stuff->state->ud);
 
-            if(stuff->load != 0) {
-                spigot_gfx_init(stuff->gfx);
-                spigot_start(stuff->gfx);
+            if(stuff->load) {
+                spigot_start_why_dont_you(stuff->gfx);
             }
 
             break;
@@ -117,7 +119,7 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             sporth_stack_pop_float(stack);
             in = sporth_stack_pop_float(stack);
             if(in != 0) {
-                if(stuff->load != 0) {
+                if(spigot_is_it_happening(stuff->gfx)) {
                     spigot_gfx_step(stuff->gfx);
                 }
                 stuff->state->step(stuff->state->ud);
@@ -127,10 +129,6 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
 
         case PLUMBER_DESTROY:
             stuff = *ud;
-            if(stuff->load != 0) {
-                spigot_stop(stuff->gfx);
-            }
-            spigot_gfx_free(stuff->gfx);
             if(runt_is_alive(&stuff->vm) == RUNT_OK) {
                 stuff->state->free(stuff->state->ud);
             }
@@ -142,7 +140,9 @@ static int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
     return PLUMBER_OK;
 }
 
+#ifdef BUILD_SPORTH_PLUGIN
 plumber_dyn_func sporth_return_ugen()
 {
     return sporth_spigot;
 }
+#endif
