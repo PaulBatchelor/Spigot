@@ -109,4 +109,6 @@ void spigot_word_define(runt_vm *vm, runt_ptr p,
     runt_uint size,
     runt_proc proc);
 
+void spigot_graphics_loop(spigot_graphics *spgt);
+
 #endif

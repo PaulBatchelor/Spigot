@@ -152,10 +152,8 @@ static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
     }
 }
 
-static void * run_loop(void *ud)
+void spigot_graphics_loop(spigot_graphics *spgt)
 {
-    spigot_graphics *spgt = (spigot_graphics *)ud;
-
     int w, h;
 
     if (!glfwInit()) {
@@ -182,7 +180,12 @@ static void * run_loop(void *ud)
     glfwSetTime(0);
     init();
     glfwSetWindowUserPointer(spgt->window, spgt);
-    while(spgt->run) {
+#ifdef BUILD_SPORTH_PLUGIN
+    while(spgt->run) 
+#else
+    while(!glfwWindowShouldClose(spgt->window)) 
+#endif
+    {
         glfwPollEvents();
         glfwGetFramebufferSize(spgt->window, &w, &h);
 
@@ -204,6 +207,12 @@ static void * run_loop(void *ud)
 
 
     glfwTerminate();
+}
+
+static void * run_loop(void *ud)
+{
+    spigot_graphics *spgt = (spigot_graphics *)ud;
+    spigot_graphics_loop(spgt);
     pthread_exit(0);
     return NULL;
 }
