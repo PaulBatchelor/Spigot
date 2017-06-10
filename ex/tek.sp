@@ -2,15 +2,22 @@
 _prop var
 _clk var
 _kick var
+_snare var
 _rms var
 _send var
+_play var
 _bpm 140 varset
 
-0 0.5 0 thresh _bpm get 4 clock _clk set
+
+_play get changed dup _bpm get 4 clock _clk set
+dup _bpm get "+" tprop _kick set
+_bpm get "-+" tprop _snare set
 
 _clk get 1 "ex/tek.rnt" _spigot fe
 
-_bpm get "4(+???)+?-|+2(++)-4(++?+)" prop _prop set
+_play get "play" print drop
+
+_play get changed _bpm get "4(+???)+?-|+2(++)-4(++?+)" tprop _prop set
  
 _prop get 0.001 0.001 0.01 tenvx 
 # _prop get 100 500 trand 0.5 sine * 
@@ -27,7 +34,6 @@ dcblk
 
 dup 0.3 _bpm get bpm2dur 0.75 * delay -10 ampdb * +
 
-_clk get 4 0 tdiv _kick set
 
 _kick get 0.001 0.001 0.05 tenvx
 _kick get 0.001 0.001 0.01 tenvx 50 120 scale 
@@ -65,15 +71,15 @@ dup 20 inv 1 sine 1000 3000 biscale 0.8 diode bal
 _rms get *
 + 
 
-_kick get 2 1 tdiv 0.001 0.01 0.1 tenvx 0.3 noise * 
+_snare get 0.001 0.01 0.1 tenvx 0.3 noise * 
 dup 
-_kick get 0.2 maygate * 30 inv 1 sine 0.5 0.9 biscale 
+_snare get 0.2 maygate * 30 inv 1 sine 0.5 0.9 biscale 
 _bpm get bpm2dur 0.75 * delay 2000 butlp +
 dup
 -5 ampdb * 
 _send get + _send set
 +
 _send get dup 0.97 10000 revsc drop _rms get -30 -10 scale ampdb * +
-
+_play get *
 dup
 )

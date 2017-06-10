@@ -45,8 +45,10 @@ typedef struct {
     int page;
     int row;
     int column;
-    int isplaying;
-    SPFLOAT isrolling;
+    SPFLOAT _isplaying;
+    SPFLOAT *isplaying;
+    SPFLOAT _isrolling;
+    SPFLOAT *isrolling;
     int isstarted;
     SPFLOAT slice[NCHAN];
     SPFLOAT gates[NCHAN];
@@ -98,8 +100,8 @@ static void init_tracker(void *ud)
     st->page = 0;
     st->row = -1;
     st->column = 0;
-    st->isplaying = 1;
-    st->isrolling = 1;
+    *st->isrolling = 1;
+    *st->isplaying = 1;
     
     for(i = 0; i < NCHAN; i++) {
         st->slice[i] = 0;
@@ -345,7 +347,7 @@ static void draw_page(spigot_graphics *gfx, spigot_tracker *t)
             pos = chan * PATSIZE + row;
             nt = &pg->notes[pos];
             note_to_args(nt, &n, &op, &oct);
-            if(chan == t->chan && row == t->row && !t->isplaying) {
+            if(chan == t->chan && row == t->row && !*t->isplaying) {
                 clr = &t->text_selected;
             } else {
                 clr = &t->foreground;
@@ -373,7 +375,7 @@ static void draw_selected_row(spigot_graphics *gfx, spigot_tracker *t)
     int row;
     row = (t->row < 0) ? 0 : t->row;
     row = row % NROWS;
-    if(t->isplaying) {
+    if(*t->isplaying) {
         spigot_draw_rect(gfx, &t->row_selected, 16, 16 + row * 8, 160, 8);
     } else {
         spigot_draw_rect(gfx, &t->foreground, 16 + 
@@ -633,8 +635,8 @@ static void tracker_step(void *ud)
     tracker_note *nt;
     int i;
     t = ud;
-    if(t->isplaying) {
-        t->isrolling = 1;
+    if(*t->isplaying) {
+        *t->isrolling = 1;
         if(t->isstarted == 1) {
             t->isstarted = 0;
         } else {
@@ -800,6 +802,7 @@ static int rproc_play(runt_vm *vm, runt_ptr p)
     spigot_tracker *t;
     const char *str;
     plumber_data *pd;
+    SPFLOAT *var;
 
     rsd = runt_to_cptr(p);
     pd = rsd->pd;
@@ -820,9 +823,14 @@ static int rproc_play(runt_vm *vm, runt_ptr p)
     RUNT_ERROR_CHECK(rc);
     str = runt_to_string(s->p);
 
-    plumber_ftmap_delete(pd, 0);
-    plumber_ftmap_add_userdata(pd, str, &t->isrolling);
-    plumber_ftmap_delete(pd, 1);
+    rc = plumber_ftmap_search_userdata(pd, str, (void **)&var);
+
+    if(rc != PLUMBER_OK) {
+        runt_print(vm, "Could not find variable %s\n", str);
+        return RUNT_NOT_OK;
+    }
+
+    t->isplaying = var;
 
     return RUNT_OK;
 }
@@ -1000,12 +1008,12 @@ static int rproc_insert(runt_vm *vm, runt_ptr p)
 static void toggle_playmode(spigot_tracker *t, int playmode)
 {
     int i;
-    if(t->isplaying) {
-        t->isplaying = 0;
-        t->isrolling = 0;
+    if(*t->isplaying) {
+        *t->isplaying = 0;
+        *t->isrolling = 0;
     } else {
         for(i = 0; i < NCHAN; i++) t->gates[i] = 0;
-        t->isplaying = 1;
+        *t->isplaying = 1;
         t->isstarted = 1;
         switch(playmode) {
             case PLAYMODE_SONG:
@@ -1407,4 +1415,6 @@ void spigot_tracker_state(plumber_data *pd, runt_vm *vm, spigot_state *state)
     spigot_color_rgb(&t->shade, 52, 158, 255);
     spigot_color_rgb(&t->row_selected, 255, 119, 171);
     spigot_color_rgb(&t->text_selected, 255, 255, 255);
+    t->isplaying = &t->_isplaying;
+    t->isrolling = &t->_isrolling;
 }
