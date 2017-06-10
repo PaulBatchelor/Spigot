@@ -28,3 +28,4 @@ spigot: $(OBJ) main.o rtaudio/RtAudio.o
 clean:
 	rm -rf $(OBJ) spigot.so
 	rm -rf main.o rtaudio/RtAudio.o
+	rm -rf spigot
