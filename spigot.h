@@ -115,4 +115,7 @@ int spigot_is_it_happening(spigot_graphics *gfx);
 int spigot_loaded(spigot_graphics *gfx);
 void spigot_set_zoom(spigot_graphics *gfx, int zoom);
 int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud);
+
+void spigot_set_recompile(spigot_graphics *gfx, int *recompile);
+void spigot_recompile(spigot_graphics *gfx);
 #endif

@@ -24,6 +24,8 @@ struct spigot_graphics {
     int zoom;
     int state_loaded;
     int begin;
+    int _recompile;
+    int *recompile;
 };
 
 void spigot_color_rgb(spigot_color *clr, uint8_t r, uint8_t g, uint8_t b)
@@ -120,6 +122,11 @@ static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
     state = gfx->state;
 
     if(action == GLFW_PRESS || action == GLFW_REPEAT) {
+
+        if(mods == GLFW_MOD_CONTROL && key == GLFW_KEY_R) {
+            spigot_recompile(gfx);
+        }
+            
         if(mods != GLFW_MOD_SHIFT) {
             switch(key) {
                 case GLFW_KEY_SPACE:
@@ -258,6 +265,7 @@ spigot_graphics * spigot_gfx_new(int zoom)
     gfx->zoom = zoom;
     gfx->state_loaded = 0;
     gfx->begin = 0;
+    gfx->recompile = &gfx->_recompile;
     return gfx;
 }
 
@@ -398,4 +406,14 @@ int spigot_loaded(spigot_graphics *gfx)
 void spigot_set_zoom(spigot_graphics *gfx, int zoom)
 {
     gfx->zoom = zoom;
+}
+
+void spigot_set_recompile(spigot_graphics *gfx, int *recompile)
+{
+    gfx->recompile = recompile;
+}
+
+void spigot_recompile(spigot_graphics *gfx)
+{
+    *gfx->recompile = 1;
 }

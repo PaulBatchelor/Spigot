@@ -8,6 +8,12 @@ spigot_graphics *global_gfx;
 }
 #include "RtAudio.h"
 
+static int add_function(plumber_data *pd, void *ud)
+
+{
+    plumber_ftmap_add_function(pd, "spigot", sporth_spigot, NULL);
+    return PLUMBER_OK;
+}
 
 static int callme( void * outputBuffer, void * inputBuffer, unsigned int numFrames,
             double streamTime, RtAudioStreamStatus status, void * data )
@@ -16,6 +22,11 @@ static int callme( void * outputBuffer, void * inputBuffer, unsigned int numFram
     unsigned int i;
     
     plumber_data *pd = (plumber_data *)data;
+
+    if(pd->recompile) {
+        plumber_recompile_v2(pd, NULL, add_function);
+        pd->recompile = 0;
+    }
 
     for(i = 0; i < numFrames * 2; i+= 2) {
         plumber_compute(pd, PLUMBER_COMPUTE);
@@ -57,11 +68,13 @@ int main(int argc, char *argv[])
     plumber_register(&pd);
     plumber_init(&pd);
 
-    plumber_ftmap_add_function(&pd, "spigot", sporth_spigot, NULL);
+    add_function(&pd, NULL);
     plumber_open_file(&pd, argv[1]);
     
     pd.sp = sp;
     global_gfx = spigot_gfx_new(3);
+
+    spigot_set_recompile(global_gfx, &pd.recompile);
     if(plumber_parse(&pd) != PLUMBER_OK) {
         plumber_print(&pd, "Error.\n");
         goto clean;

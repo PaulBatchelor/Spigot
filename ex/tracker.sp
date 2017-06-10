@@ -4,6 +4,7 @@ _expr var
 _highs var
 _tick var
 _bpm 54 varset 
+_play var
 tick _tick set
 0 _bpm get 4 clock dup _clk set
 
