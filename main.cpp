@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
     audio.showWarnings( true );
 
     sp_create(&sp);
+    sp->sr = info.preferredSampleRate;
     plumber_register(&pd);
     plumber_init(&pd);
 
@@ -94,6 +95,7 @@ int main(int argc, char *argv[])
     } else {
         fgetc(stdin);
     }
+
 clean:
     audio.stopStream();
     if(spigot_is_it_happening(global_gfx)) {
