@@ -20,6 +20,5 @@ dup 0 ne samphold
 _notes tget mtof 0.3 
 1 7 _env get 1 *  fm *
 
-dup
 _spigot fc
 )

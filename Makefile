@@ -1,4 +1,4 @@
-OBJ =pbrain.o spigot.o graphics.o runt.o tracker.o
+OBJ =pbrain.o runt.o tracker.o
 
 CFLAGS += -fPIC -g -ansi -Wall 
 CFLAGS += -I$(HOME)/.runt/include
@@ -19,13 +19,13 @@ default: spigot
 %.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
-spigot.so: $(OBJ)
-	$(CC) $(CFLAGS) -shared -o $@ $(OBJ) $(LIBS)
+spigot.so: spigot.c graphics.c $(OBJ) 
+	$(CC) $(CFLAGS) -DBUILD_SPORTH_PLUGIN spigot.c graphics.c -shared -o $@ $(OBJ) $(LIBS)
 
-spigot: $(OBJ) main.o rtaudio/RtAudio.o
-	$(CXX) $(CXXFLAGS) $(OBJ) main.o rtaudio/RtAudio.o -o $@ $(LIBS)
+spigot: $(OBJ) main.o rtaudio/RtAudio.o spigot.o graphics.o
+	$(CXX) $(CXXFLAGS) $(OBJ) spigot.o graphics.o main.o rtaudio/RtAudio.o -o $@ $(LIBS)
 
 clean:
 	rm -rf $(OBJ) spigot.so
-	rm -rf main.o rtaudio/RtAudio.o
+	rm -rf main.o rtaudio/RtAudio.o spigot.o graphics.o
 	rm -rf spigot

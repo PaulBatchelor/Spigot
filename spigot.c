@@ -4,7 +4,9 @@
 
 #include "spigot.h"
 
+#ifndef BUILD_SPORTH_PLUGIN
 extern spigot_graphics *global_gfx;
+#endif
 
 typedef struct {
     spigot_graphics *gfx;
@@ -86,8 +88,12 @@ int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             zoom = 3;
             rc = spigot_load(pd, &stuff->vm, &stuff->state, filename, &zoom);
 
+#ifndef BUILD_SPORTH_PLUGIN
             stuff->gfx = global_gfx;
             spigot_set_zoom(stuff->gfx, zoom);
+#else
+            stuff->gfx = spigot_gfx_new(zoom);
+#endif
 
             spigot_gfx_set_state(stuff->gfx, stuff->state);
 
@@ -110,6 +116,10 @@ int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
 
             if(stuff->load) {
                 spigot_start_why_dont_you(stuff->gfx);
+#ifdef BUILD_SPORTH_PLUGIN
+                spigot_gfx_init(stuff->gfx);
+                spigot_start(stuff->gfx);
+#endif
             }
 
             break;
@@ -132,6 +142,12 @@ int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             if(runt_is_alive(&stuff->vm) == RUNT_OK) {
                 stuff->state->free(stuff->state->ud);
             }
+#ifdef BUILD_SPORTH_PLUGIN
+            if(spigot_is_it_happening(stuff->gfx)) {
+                spigot_stop(stuff->gfx);
+            }
+            spigot_gfx_free(stuff->gfx);
+#endif
             free(stuff->mem);
             free(stuff->cells);
             free(stuff);

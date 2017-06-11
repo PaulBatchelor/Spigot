@@ -50,5 +50,4 @@ _s5 get 3 20 scale inv 1 sine 0 2 biscale 1 _s3 get 1 4 scale 512 _buf mincer _s
 dcblk
 
 dup _s7 get * dup 0.94 10000 revsc drop 0.3 * +
-dup
 )

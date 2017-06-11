@@ -31,7 +31,7 @@ static int callme( void * outputBuffer, void * inputBuffer, unsigned int numFram
     for(i = 0; i < numFrames * 2; i+= 2) {
         plumber_compute(pd, PLUMBER_COMPUTE);
         output[i] = sporth_stack_pop_float(&pd->sporth.stack);
-        output[i + 1] = sporth_stack_pop_float(&pd->sporth.stack);
+        output[i + 1] = output[i];
     }
     return 0;
 }

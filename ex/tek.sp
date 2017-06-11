@@ -81,5 +81,4 @@ _send get + _send set
 +
 _send get dup 0.97 10000 revsc drop _rms get -30 -10 scale ampdb * +
 _play get *
-dup
 )
