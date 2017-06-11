@@ -55,6 +55,4 @@ _play get *
 dup 1000 buthp dup 0.94 10000 revsc drop -20 ampdb * + dcblk
 
 _highs get 0.6 _bpm get bpm2dur 0.75 * delay 1000 buthp -15 ampdb * +
-
-dup
 )

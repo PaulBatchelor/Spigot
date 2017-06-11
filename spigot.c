@@ -148,6 +148,7 @@ int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             }
             spigot_gfx_free(stuff->gfx);
 #endif
+            runt_close_plugins(&stuff->vm);
             free(stuff->mem);
             free(stuff->cells);
             free(stuff);
