@@ -102,6 +102,7 @@ static void init_tracker(void *ud)
     st->column = 0;
     *st->isrolling = 1;
     *st->isplaying = 1;
+    st->isstarted = 0;
     
     for(i = 0; i < NCHAN; i++) {
         st->slice[i] = 0;

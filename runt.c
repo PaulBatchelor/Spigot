@@ -1,6 +1,8 @@
 #include <soundpipe.h>
 #include <sporth.h>
 #include "spigot.h"
+/* needs to be included after spigot to get runt.h */
+#include <runt_plumber.h>
 
 static runt_int rproc_pbrain(runt_vm *vm, runt_ptr p)
 {
@@ -107,6 +109,28 @@ static int rproc_zoom(runt_vm *vm, runt_ptr p)
     return RUNT_OK;
 }
 
+static runt_int rproc_plumb(runt_vm *vm, runt_ptr p)
+{
+    runt_int rc;
+    runt_stacklet *s;
+    runt_spigot_data *rsd;
+
+    rsd = runt_to_cptr(p);
+    
+    rc = runt_ppush(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    s->p = runt_mk_cptr(vm, rsd->pd);
+
+    return RUNT_OK;
+}
+
+static runt_int rproc_plumber(runt_vm *vm, runt_ptr p)
+{
+    runt_load_plumber(vm);
+    runt_mark_set(vm);
+    return runt_is_alive(vm);
+}
+
 void spigot_word_define(runt_vm *vm, runt_ptr p,
     const char *str,
     runt_uint size,
@@ -136,6 +160,8 @@ int spigot_load(plumber_data *pd, runt_vm *vm,
     spigot_word_define(vm, p, "new_state", 9, rproc_newstate);
     spigot_word_define(vm, p, "tracker", 7, rproc_tracker);
     spigot_word_define(vm, p, "spigot_zoom", 11, rproc_zoom);
+    spigot_word_define(vm, p, "spigot_plumb", 12, rproc_plumb);
+    spigot_word_define(vm, p, "spigot_plumber", 14, rproc_plumber);
     spigot_tracker_runt(vm, p);
     spigot_pbrain_runt(vm, p);
     
