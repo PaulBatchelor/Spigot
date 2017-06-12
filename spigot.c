@@ -81,7 +81,7 @@ int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             stuff->mem = malloc(5 * RUNT_MEGABYTE * sizeof(unsigned char));
 
             runt_init(&stuff->vm);
-            runt_cell_pool_set(&stuff->vm, stuff->cells, 512);
+            runt_cell_pool_set(&stuff->vm, stuff->cells, 1024);
             runt_cell_pool_init(&stuff->vm);
             runt_memory_pool_set(&stuff->vm, stuff->mem, 5 * RUNT_MEGABYTE);
 
