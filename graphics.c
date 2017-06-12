@@ -196,7 +196,7 @@ void spigot_graphics_loop(spigot_graphics *spgt)
 #endif
     {
         glfwPollEvents();
-        glfwGetFramebufferSize(spgt->window, &w, &h);
+        glfwGetWindowSize(spgt->window, &w, &h);
 
         glViewport(0, 0, (GLsizei) w, (GLsizei) h); 
         /* glViewport(w, h, (GLsizei) w, (GLsizei) h); */
