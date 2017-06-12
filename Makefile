@@ -5,7 +5,6 @@ CFLAGS += -I$(HOME)/.runt/include
 CFLAGS += -DLIVE_CODING
 LIBS += -lsporth -lsoundpipe -lm -lsndfile -ldl -lglfw -lGL -lrunt -ljack
 LIBS += -L$(HOME)/.runt/lib
-LIBS += -lrunt_plumber
 
 CXXFLAGS += -D__UNIX_JACK__ -fPIC -Irtaudio $(CFLAGS)
 
