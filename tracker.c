@@ -1176,10 +1176,14 @@ static void delete_sequence(spigot_tracker *t)
 {
     int i;
 
+    if(t->nseq == 1) return ;
     for(i = t->seqpos; i < t->nseq; i++) {
         t->seq[i] = t->seq[i + 1];
     }
     t->nseq--;
+    if(t->seqpos >= t->nseq - 1) {
+        t->seqpos = t->nseq - 1;
+    }
     t->page = t->seq[t->seqpos];
 }
 
