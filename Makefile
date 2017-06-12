@@ -2,6 +2,7 @@ OBJ =pbrain.o runt.o tracker.o
 
 CFLAGS += -fPIC -g -ansi -Wall 
 CFLAGS += -I$(HOME)/.runt/include
+CFLAGS += -DLIVE_CODING
 LIBS += -lsporth -lsoundpipe -lm -lsndfile -ldl -lglfw -lGL -lrunt -ljack
 LIBS += -L$(HOME)/.runt/lib
 LIBS += -lrunt_plumber
@@ -25,6 +26,9 @@ spigot.so: spigot.c graphics.c $(OBJ)
 
 spigot: $(OBJ) main.o rtaudio/RtAudio.o spigot.o graphics.o
 	$(CXX) $(CXXFLAGS) $(OBJ) spigot.o graphics.o main.o rtaudio/RtAudio.o -o $@ $(LIBS)
+
+install: spigot
+	install spigot /usr/local/bin
 
 clean:
 	rm -rf $(OBJ) spigot.so
