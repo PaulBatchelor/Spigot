@@ -86,6 +86,8 @@ int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             runt_memory_pool_set(&stuff->vm, stuff->mem, 5 * RUNT_MEGABYTE);
 
             zoom = 3;
+            runt_load_stdlib(&stuff->vm);
+            runt_mark_set(&stuff->vm);
             rc = spigot_load(pd, &stuff->vm, &stuff->state, filename, &zoom);
 
 #ifndef BUILD_SPORTH_PLUGIN

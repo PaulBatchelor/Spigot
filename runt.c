@@ -154,7 +154,6 @@ int spigot_load(plumber_data *pd, runt_vm *vm,
     p = runt_mk_cptr(vm, rsd);
 
     runt_mark_set(vm);
-    runt_load_stdlib(vm);
     spigot_word_define(vm, p, "pbrain", 6, rproc_pbrain);
     spigot_word_define(vm, p, "spigot_state", 12, rproc_state);
     spigot_word_define(vm, p, "new_state", 9, rproc_newstate);
