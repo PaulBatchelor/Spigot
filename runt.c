@@ -141,6 +141,11 @@ void spigot_word_define(runt_vm *vm, runt_ptr p,
     runt_word_bind_ptr(vm, id, p);
 }
 
+int spigot_parse(runt_vm *vm, const char *filename, spigot_state **state)
+{
+    return PLUMBER_OK;
+}
+
 int spigot_load(plumber_data *pd, runt_vm *vm, 
         spigot_state **state, const char *filename, int *zoom)
 {
@@ -153,7 +158,6 @@ int spigot_load(plumber_data *pd, runt_vm *vm,
     rsd->zoom = zoom;
     p = runt_mk_cptr(vm, rsd);
 
-    runt_mark_set(vm);
     spigot_word_define(vm, p, "pbrain", 6, rproc_pbrain);
     spigot_word_define(vm, p, "spigot_state", 12, rproc_state);
     spigot_word_define(vm, p, "new_state", 9, rproc_newstate);
@@ -163,8 +167,6 @@ int spigot_load(plumber_data *pd, runt_vm *vm,
     spigot_word_define(vm, p, "spigot_plumber", 14, rproc_plumber);
     spigot_tracker_runt(vm, p);
     spigot_pbrain_runt(vm, p);
-    
-
     runt_mark_set(vm);
     runt_set_state(vm, RUNT_MODE_INTERACTIVE, RUNT_ON);
     if(runt_parse_file(vm, filename) != RUNT_OK) {
@@ -173,6 +175,24 @@ int spigot_load(plumber_data *pd, runt_vm *vm,
     }
     
     *state = rsd->state;
+    rsd->state->vm = vm;
 
     return PLUMBER_OK;
+}
+
+runt_spigot_data *spigot_get_runt_data(runt_vm *vm)
+{
+    runt_spigot_data *rsd;
+    runt_entry *entry;
+    runt_cell *cell;
+
+    /* retrieve "new_state" entry */
+
+    runt_word_search(vm, "new_state", 9, &entry);
+
+    cell = entry->cell;
+
+    rsd = runt_to_cptr(cell->p);
+
+    return rsd;
 }

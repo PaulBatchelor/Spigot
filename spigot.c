@@ -159,6 +159,46 @@ int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
     return PLUMBER_OK;
 }
 
+int sporth_spigot_wrapper(plumber_data *pd, sporth_stack *stack, void **ud)
+{
+    SPFLOAT in;
+    spigot_state *state;
+    switch(pd->mode) {
+        case PLUMBER_CREATE:
+            if(sporth_check_args(stack, "f") != SPORTH_OK) {
+                fprintf(stderr,"Not enough arguments for spigot wrapper\n");
+                stack->error++;
+                return PLUMBER_NOTOK;
+            }
+            sporth_stack_pop_float(stack);
+
+
+            break;
+        case PLUMBER_INIT:
+            state = *ud;
+            sporth_stack_pop_float(stack);
+            state->init(state->ud);
+            break;
+
+        case PLUMBER_COMPUTE:
+            state = *ud;
+            in = sporth_stack_pop_float(stack);
+            if(in != 0) {
+                state->step(state->ud);
+            }
+
+            break;
+
+        case PLUMBER_DESTROY:
+            state = *ud;
+            if(runt_is_alive(state->vm) == RUNT_OK) {
+                state->free(state->ud);
+            }
+            break;
+    }
+    return PLUMBER_OK;
+}
+
 #ifdef BUILD_SPORTH_PLUGIN
 plumber_dyn_func sporth_return_ugen()
 {
