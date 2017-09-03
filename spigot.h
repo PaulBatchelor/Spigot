@@ -122,4 +122,6 @@ int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud);
 
 void spigot_set_recompile(spigot_graphics *gfx, int *recompile);
 void spigot_recompile(spigot_graphics *gfx);
+
+void spigot_add_ugen(plumber_data *pd, const char *name, spigot_state *state);
 #endif

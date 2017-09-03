@@ -131,6 +131,76 @@ static runt_int rproc_plumber(runt_vm *vm, runt_ptr p)
     return runt_is_alive(vm);
 }
 
+static runt_int rproc_ugen(runt_vm *vm, runt_ptr p)
+{
+    const char *name;
+    spigot_state *state;
+    plumber_data *pd;
+    runt_int rc;
+    runt_stacklet *s;
+
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    pd = runt_to_cptr(s->p);
+    
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    state = runt_to_cptr(s->p);
+    
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    name = runt_to_string(s->p);
+
+    spigot_add_ugen(pd, name, state);
+
+    return RUNT_OK;
+}
+
+static runt_int rproc_step(runt_vm *vm, runt_ptr p)
+{
+    spigot_state *state;
+    runt_stacklet *s;
+    runt_int rc;
+
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    state = runt_to_cptr(s->p);
+
+    state->step(state->ud);
+
+    return RUNT_OK;
+}
+
+static runt_int rproc_init(runt_vm *vm, runt_ptr p)
+{
+    spigot_state *state;
+    runt_stacklet *s;
+    runt_int rc;
+
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    state = runt_to_cptr(s->p);
+
+    state->init(state->ud);
+
+    return RUNT_OK;
+}
+
+static runt_int rproc_free(runt_vm *vm, runt_ptr p)
+{
+    spigot_state *state;
+    runt_stacklet *s;
+    runt_int rc;
+
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    state = runt_to_cptr(s->p);
+
+    state->free(state->ud);
+
+    return RUNT_OK;
+}
+
 void spigot_word_define(runt_vm *vm, runt_ptr p,
     const char *str,
     runt_uint size,
@@ -176,11 +246,15 @@ int spigot_load(plumber_data *pd, runt_vm *vm, int *zoom)
     spigot_word_define(vm, p, "spigot_zoom", 11, rproc_zoom);
     spigot_word_define(vm, p, "spigot_plumb", 12, rproc_plumb);
     spigot_word_define(vm, p, "spigot_plumber", 14, rproc_plumber);
+    spigot_word_define(vm, p, "spigot_ugen", 11, rproc_ugen);
+    spigot_word_define(vm, p, "spigot_step", 11, rproc_step);
+    spigot_word_define(vm, p, "spigot_init", 11, rproc_init);
+    spigot_word_define(vm, p, "spigot_free", 11, rproc_free);
     spigot_tracker_runt(vm, p);
     spigot_pbrain_runt(vm, p);
     runt_mark_set(vm);
 
-    return PLUMBER_OK;
+    return runt_is_alive(vm);
 }
 
 runt_spigot_data *spigot_get_runt_data(runt_vm *vm)

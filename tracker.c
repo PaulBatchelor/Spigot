@@ -4,9 +4,10 @@
 #include <stdlib.h>
 #include <GLFW/glfw3.h>
 #include <unistd.h>
-
+#include <string.h>
 #include "spigot.h"
 #include "tracker_assets.h"
+#include "plumbstream.h"
 
 #define PATSIZE 64
 #define NCHAN 5
@@ -760,6 +761,48 @@ static int rproc_notes(runt_vm *vm, runt_ptr p)
     return RUNT_OK;
 }
 
+static int rproc_snotes(runt_vm *vm, runt_ptr p)
+{
+    runt_int rc;
+    runt_stacklet *s;
+    runt_spigot_data *rsd;
+    spigot_tracker *t;
+    const char *str;
+    plumber_data *pd;
+    sp_ftbl *ft;
+    plumber_stream *stream;
+
+    rsd = runt_to_cptr(p);
+    pd = rsd->pd;
+
+    if(rsd->loaded == 0) {
+        runt_print(vm, "Please load a state first.\n");
+        return RUNT_NOT_OK;
+    }
+
+    if(rsd->state->type != SPIGOT_TRACKER) {
+        runt_print(vm, "State type is not a tracker.\n");
+        return RUNT_NOT_OK;
+    }
+
+    t = rsd->state->ud;
+
+
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    stream = runt_to_cptr(s->p);
+
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    str = runt_to_string(s->p);
+
+    sp_ftbl_bind(pd->sp, &ft, t->slice, NCHAN);
+
+    plumber_stream_append_data(pd, stream, str, strlen(str), ft, 1, PTYPE_TABLE);
+
+    return RUNT_OK;
+}
+
 static int rproc_gates(runt_vm *vm, runt_ptr p)
 {
     runt_int rc;
@@ -791,6 +834,46 @@ static int rproc_gates(runt_vm *vm, runt_ptr p)
 
     sp_ftbl_bind(pd->sp, &ft, t->gates, NCHAN);
     plumber_ftmap_add(pd, str, ft);
+
+    return RUNT_OK;
+}
+
+static int rproc_sgates(runt_vm *vm, runt_ptr p)
+{
+    runt_int rc;
+    runt_stacklet *s;
+    runt_spigot_data *rsd;
+    spigot_tracker *t;
+    const char *str;
+    plumber_data *pd;
+    sp_ftbl *ft;
+    plumber_stream *stream;
+
+    rsd = runt_to_cptr(p);
+    pd = rsd->pd;
+
+    if(rsd->loaded == 0) {
+        runt_print(vm, "Please load a state first.\n");
+        return RUNT_NOT_OK;
+    }
+
+    if(rsd->state->type != SPIGOT_TRACKER) {
+        runt_print(vm, "State type is not a tracker.\n");
+        return RUNT_NOT_OK;
+    }
+
+    t = rsd->state->ud;
+    
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    stream = runt_to_cptr(s->p);
+
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    str = runt_to_string(s->p);
+
+    sp_ftbl_bind(pd->sp, &ft, t->gates, NCHAN);
+    plumber_stream_append_data(pd, stream, str, strlen(str), ft, 1, PTYPE_TABLE);
 
     return RUNT_OK;
 }
@@ -1381,6 +1464,8 @@ int spigot_tracker_runt(runt_vm *vm, runt_ptr p)
     spigot_word_define(vm, p, "tracker_notes", 13, rproc_notes);
     spigot_word_define(vm, p, "tracker_noteoff", 15, rproc_noteoff);
     spigot_word_define(vm, p, "tracker_gates", 13, rproc_gates);
+    spigot_word_define(vm, p, "tracker_snotes", 14, rproc_snotes);
+    spigot_word_define(vm, p, "tracker_sgates", 14, rproc_sgates);
     spigot_word_define(vm, p, "tracker_play", 12, rproc_play);
     spigot_word_define(vm, p, "tracker_open", 12, rproc_load);
     spigot_word_define(vm, p, "tracker_seq", 11, rproc_seq);
