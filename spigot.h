@@ -96,8 +96,7 @@ void spigot_draw_rect(spigot_graphics *gfx, spigot_color *clr,
         int pos_x, int pos_y, int w, int h); 
 
 
-int spigot_load(plumber_data *pd, runt_vm *vm, 
-        spigot_state **state, const char *filename, int *zoom);
+int spigot_load(plumber_data *pd, runt_vm *vm, int *zoom);
 
 int spigot_parse(runt_vm *vm, const char *filename, spigot_state **state);
 

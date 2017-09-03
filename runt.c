@@ -143,11 +143,22 @@ void spigot_word_define(runt_vm *vm, runt_ptr p,
 
 int spigot_parse(runt_vm *vm, const char *filename, spigot_state **state)
 {
+    runt_spigot_data *rsd;
+
+    rsd = spigot_get_runt_data(vm);
+    runt_set_state(vm, RUNT_MODE_INTERACTIVE, RUNT_ON);
+    if(runt_parse_file(vm, filename) != RUNT_OK) {
+        runt_seppuku(vm);
+        return PLUMBER_NOTOK;
+    }
+    
+    *state = rsd->state;
+    rsd->state->vm = vm;
     return PLUMBER_OK;
 }
 
-int spigot_load(plumber_data *pd, runt_vm *vm, 
-        spigot_state **state, const char *filename, int *zoom)
+/* TODO: remove zoom here */
+int spigot_load(plumber_data *pd, runt_vm *vm, int *zoom)
 {
     runt_spigot_data *rsd;
     runt_ptr p;
@@ -168,14 +179,6 @@ int spigot_load(plumber_data *pd, runt_vm *vm,
     spigot_tracker_runt(vm, p);
     spigot_pbrain_runt(vm, p);
     runt_mark_set(vm);
-    runt_set_state(vm, RUNT_MODE_INTERACTIVE, RUNT_ON);
-    if(runt_parse_file(vm, filename) != RUNT_OK) {
-        runt_seppuku(vm);
-        return PLUMBER_NOTOK;
-    }
-    
-    *state = rsd->state;
-    rsd->state->vm = vm;
 
     return PLUMBER_OK;
 }

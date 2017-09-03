@@ -88,7 +88,8 @@ int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
             zoom = 3;
             runt_load_stdlib(&stuff->vm);
             runt_mark_set(&stuff->vm);
-            rc = spigot_load(pd, &stuff->vm, &stuff->state, filename, &zoom);
+            rc = spigot_load(pd, &stuff->vm, &zoom);
+            rc = spigot_parse(&stuff->vm, filename, &stuff->state);
 
 #ifndef BUILD_SPORTH_PLUGIN
             stuff->gfx = global_gfx;
