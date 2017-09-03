@@ -27,8 +27,13 @@ spigot.so: spigot.c graphics.c $(OBJ)
 spigot: $(OBJ) main.o rtaudio/RtAudio.o spigot.o graphics.o
 	$(CXX) $(CXXFLAGS) $(OBJ) spigot.o graphics.o main.o rtaudio/RtAudio.o -o $@ $(LIBS)
 
-install: spigot
+libspigot.a: $(OBJ) spigot.o
+	$(AR) rcs $@ $(OBJ) spigot.o
+
+install: spigot libspigot.a
 	install spigot /usr/local/bin
+	install libspigot.a /usr/local/lib
+	install spigot.h /usr/local/include
 
 clean:
 	rm -rf $(OBJ) spigot.so
