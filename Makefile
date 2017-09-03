@@ -39,3 +39,4 @@ clean:
 	rm -rf $(OBJ) spigot.so
 	rm -rf main.o rtaudio/RtAudio.o spigot.o graphics.o plugin.o
 	rm -rf spigot
+	rm -rf libspigot.a
