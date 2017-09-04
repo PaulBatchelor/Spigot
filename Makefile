@@ -1,4 +1,4 @@
-OBJ =pbrain.o runt.o tracker.o 
+OBJ =pbrain.o runt.o tracker.o db.o
 
 CFLAGS += -fPIC -g -ansi -Wall 
 CFLAGS += -I$(HOME)/.runt/include
@@ -6,6 +6,7 @@ CFLAGS += -DLIVE_CODING
 LIBS += -lsporth -lsoundpipe -lm -lsndfile -ldl -lglfw -lGL -lrunt -ljack
 LIBS += -L$(HOME)/.runt/lib
 LIBS += -lrunt_plumber
+LIBS += -lsqlite3
 
 CXXFLAGS += -D__UNIX_JACK__ -fPIC -Irtaudio $(CFLAGS)
 

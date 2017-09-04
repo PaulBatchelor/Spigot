@@ -6,6 +6,8 @@ typedef struct spigot_pbrain spigot_pbrain;
 
 typedef struct spigot_graphics spigot_graphics;
 
+typedef struct spigot_db spigot_db;
+
 typedef void (*spigot_fun)(void *);
 typedef void (*spigot_constfun)(void *, SPFLOAT);
 typedef void (*spigot_drawfun)(spigot_graphics *, void *);
@@ -124,4 +126,9 @@ void spigot_set_recompile(spigot_graphics *gfx, int *recompile);
 void spigot_recompile(spigot_graphics *gfx);
 
 void spigot_add_ugen(plumber_data *pd, const char *name, spigot_state *state);
+
+int spigot_db_open(spigot_db *db, plumber_data *pd, const char *filename);
+int spigot_cdb_open(spigot_db *db, unsigned int id);
+void spigot_cdb_close(spigot_db *db, int fd);
+int spigot_db_close(spigot_db *db);
 #endif
