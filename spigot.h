@@ -131,4 +131,6 @@ int spigot_db_open(spigot_db *db, plumber_data *pd, const char *filename);
 int spigot_cdb_open(spigot_db *db, unsigned int id);
 void spigot_cdb_close(spigot_db *db, int fd);
 int spigot_db_close(spigot_db *db);
+
+size_t spigot_db_size();
 #endif

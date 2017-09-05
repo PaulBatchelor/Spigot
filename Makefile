@@ -31,6 +31,9 @@ spigot: $(OBJ) main.o rtaudio/RtAudio.o spigot.o graphics.o plugin.o
 libspigot.a: $(OBJ) spigot.o graphics.o
 	$(AR) rcs $@ $(OBJ) spigot.o graphics.o
 
+test_db: test_db.c libspigot.a
+	$(CC) $(CFLAGS) $< -o $@ libspigot.a $(LIBS)
+
 install: spigot libspigot.a 
 	install spigot /usr/local/bin
 	install libspigot.a /usr/local/lib
