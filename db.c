@@ -21,7 +21,7 @@ int spigot_db_open(spigot_db *db, plumber_data *pd, const char *filename)
     /* TODO: implement me! */
     sampdir = getenv("SPIGOT_SAMPDIR");
     if(sampdir == NULL) {
-        fprintf(stderr, "error: SAMPDIR must be set!\n");
+        fprintf(stderr, "error: SPIGOT_SAMPDIR must be set!\n");
         return 0;
     }
     getcwd(cwd, 1024);
