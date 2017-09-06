@@ -24,7 +24,7 @@ int main()
     plumber_register(&pd);
     plumber_init(&pd);
     pd.sp = sp;
-    spigot_db_open(db, &pd, "data.db");
+    spigot_db_open(db, "data.db");
     fd = spigot_cdb_open(db, 1);
 
     plumber_ftmap_delete(&pd, 0);

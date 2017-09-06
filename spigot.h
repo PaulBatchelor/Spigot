@@ -127,10 +127,11 @@ void spigot_recompile(spigot_graphics *gfx);
 
 void spigot_add_ugen(plumber_data *pd, const char *name, spigot_state *state);
 
-int spigot_db_open(spigot_db *db, plumber_data *pd, const char *filename);
+int spigot_db_open(spigot_db *db, const char *filename);
 int spigot_cdb_open(spigot_db *db, unsigned int id);
 void spigot_cdb_close(spigot_db *db, int fd);
 int spigot_db_close(spigot_db *db);
 
 size_t spigot_db_size();
+size_t spigot_db_runt(runt_vm *vm, runt_ptr p);
 #endif

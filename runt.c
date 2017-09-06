@@ -252,6 +252,7 @@ int spigot_load(plumber_data *pd, runt_vm *vm, int *zoom)
     spigot_word_define(vm, p, "spigot_free", 11, rproc_free);
     spigot_tracker_runt(vm, p);
     spigot_pbrain_runt(vm, p);
+    spigot_db_runt(vm, p);
     runt_mark_set(vm);
 
     return runt_is_alive(vm);
