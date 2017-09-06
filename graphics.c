@@ -216,6 +216,7 @@ void spigot_graphics_loop(spigot_graphics *spgt)
 
 
     glfwTerminate();
+    fprintf(stderr, "Terminated...\n");
 }
 
 static void * run_loop(void *ud)

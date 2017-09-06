@@ -4,12 +4,11 @@ extern "C" {
 #include <soundpipe.h>
 #include <sporth.h>
 #include "spigot.h"
-spigot_graphics *global_gfx;
+extern spigot_graphics *global_gfx;
 }
 #include "RtAudio.h"
 
 static int add_function(plumber_data *pd, void *ud)
-
 {
     plumber_ftmap_add_function(pd, "spigot", sporth_spigot, NULL);
     return PLUMBER_OK;

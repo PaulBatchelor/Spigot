@@ -135,6 +135,6 @@ int spigot_db_close(spigot_db *db);
 size_t spigot_db_size();
 size_t spigot_db_runt(runt_vm *vm, runt_ptr p);
 
-void spigot_start_audio(plumber_data *pd);
+void spigot_start_audio(plumber_data *pd, spigot_state *state, int use_gfx);
 void spigot_audio_runt(runt_vm *vm, runt_ptr p);
 #endif

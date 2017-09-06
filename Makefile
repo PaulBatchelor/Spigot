@@ -22,9 +22,9 @@ default: spigot libspigot.a
 %.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
-spigot.so: spigot.c graphics.c plugin.c $(OBJ) 
-	$(CC) $(CFLAGS) -DBUILD_SPORTH_PLUGIN spigot.c graphics.c plugin.c -shared -o $@ $(OBJ) $(LIBS)
-
+# spigot.so: spigot.c graphics.c plugin.c $(OBJ) 
+# 	$(CC) $(CFLAGS) -DBUILD_SPORTH_PLUGIN spigot.c graphics.c plugin.c -shared -o $@ $(OBJ) $(LIBS)
+# 
 spigot: $(OBJ) main.o rtaudio/RtAudio.o spigot.o graphics.o plugin.o
 	$(CXX) $(CXXFLAGS) $(OBJ) spigot.o graphics.o main.o rtaudio/RtAudio.o plugin.o -o $@ $(LIBS)
 
