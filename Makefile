@@ -1,4 +1,4 @@
-OBJ =pbrain.o runt.o tracker.o db.o
+OBJ =pbrain.o runt.o tracker.o db.o audio.o
 
 CFLAGS += -fPIC -g -ansi -Wall 
 CFLAGS += -I$(HOME)/.runt/include
@@ -28,8 +28,8 @@ spigot.so: spigot.c graphics.c plugin.c $(OBJ)
 spigot: $(OBJ) main.o rtaudio/RtAudio.o spigot.o graphics.o plugin.o
 	$(CXX) $(CXXFLAGS) $(OBJ) spigot.o graphics.o main.o rtaudio/RtAudio.o plugin.o -o $@ $(LIBS)
 
-libspigot.a: $(OBJ) spigot.o graphics.o
-	$(AR) rcs $@ $(OBJ) spigot.o graphics.o
+libspigot.a: $(OBJ) spigot.o graphics.o rtaudio/RtAudio.o
+	$(AR) rcs $@ $(OBJ) spigot.o graphics.o rtaudio/RtAudio.o
 
 test_db: test_db.c libspigot.a
 	$(CC) $(CFLAGS) $< -o $@ libspigot.a $(LIBS)
