@@ -1,4 +1,4 @@
-OBJ =pbrain.o runt.o tracker.o db.o audio.o
+OBJ =pbrain.o runt.o tracker.o db.o audio.o step.o
 
 CFLAGS += -fPIC -g -ansi -Wall 
 CFLAGS += -I$(HOME)/.runt/include

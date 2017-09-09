@@ -137,4 +137,6 @@ size_t spigot_db_runt(runt_vm *vm, runt_ptr p);
 
 void spigot_start_audio(plumber_data *pd, spigot_state *state, int use_gfx);
 void spigot_audio_runt(runt_vm *vm, runt_ptr p);
+
+int spigot_step16_runt(runt_vm *vm, runt_ptr p);
 #endif
