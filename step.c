@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <GLFW/glfw3.h>
 #include <string.h>
+#include <unistd.h>
 #include "plumbstream.h"
 
 #include "spigot.h"
@@ -10,6 +11,7 @@
 #define STEP16_DATASIZE 128
 
 typedef struct {
+    runt_vm *vm;
     spigot_color bgcolor;
     spigot_color fgcolor;
     int curpos;
@@ -18,6 +20,8 @@ typedef struct {
     int seqpos;
     int init;
     int play;
+    const char *filename;
+    int loaded;
 } spigot_step16;
 
 static void step16_free(void *ud)
@@ -184,6 +188,53 @@ static void up(void *ud)
     }
 }
 
+static void load_file(spigot_step16 *s)
+{
+    if(!s->loaded) {
+        runt_print(s->vm, "No filename loaded!\n");
+        return;
+    }
+    if(access(s->filename, F_OK) != -1) {
+        runt_print(s->vm, "Loading file %s\n", s->filename);
+        runt_parse_file(s->vm, s->filename);
+    }
+}
+
+static void save_file(spigot_step16 *s)
+{
+    FILE *fp;
+    int x, y;
+    int off;
+    int pos;
+
+    if(!s->loaded) {
+        runt_print(s->vm, "No filename loaded!\n");
+        return;
+    }
+
+    fp = fopen(s->filename, "w");
+
+    if(fp == NULL) {
+        runt_print(s->vm, "There was a problem writing to %s.\n", s->filename);
+        return;
+    }
+    
+    runt_print(s->vm, "File saved to %s.\n", s->filename);
+    
+    for(y = 0; y < 8; y++) {
+        off = 16 * y;
+        fprintf(fp, "%d step16_row\n\n", y);
+        for(x = 0; x < 16; x++) {
+           pos = off + x;
+           if(s->data[pos]) {
+                fprintf(fp, "%d step16_on\n", x);
+           }
+        }
+        fprintf(fp, "\n");
+    }
+    fclose(fp);
+}
+
 static void keyhandler(spigot_graphics *gfx, void *ud, 
         int key, int scancode, int action, int mods)
 {
@@ -198,6 +249,9 @@ static void keyhandler(spigot_graphics *gfx, void *ud,
                 s->data[s->curpos] = 1;
             }
             spigot_gfx_step(gfx);
+            break;
+        case GLFW_KEY_S:
+            save_file(s);
             break;
     }
 }
@@ -227,6 +281,8 @@ static void step16_init(plumber_data *pd, runt_vm *vm, spigot_state *state)
     spigot_color_rgb(&s->fgcolor, 0, 130, 255);
 
     for(d = 0; d < STEP16_DATASIZE; d++) s->data[d] = 0;
+    s->vm = vm;
+    s->loaded = 0;
 
 }
 
@@ -347,6 +403,32 @@ static int rproc_on(runt_vm *vm, runt_ptr p)
     return RUNT_OK;
 }
 
+static int rproc_load(runt_vm *vm, runt_ptr p)
+{
+    runt_int rc;
+    runt_stacklet *s;
+    runt_spigot_data *rsd;
+    spigot_step16 *stp;
+    const char *str;
+    
+    rsd = runt_to_cptr(p);
+    stp = rsd->state->ud;
+    
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    str = runt_to_string(s->p);
+    /* save string onto stack... careful */
+    runt_mark_set(vm);
+    runt_cell_undo(vm);
+    
+    stp->loaded = 1;
+    stp->filename = str;
+    
+    load_file(stp);
+
+    return RUNT_OK;
+}
+
 int spigot_step16_runt(runt_vm *vm, runt_ptr p)
 {
     spigot_word_define(vm, p, "step16", 6, rproc_step16);
@@ -354,5 +436,6 @@ int spigot_step16_runt(runt_vm *vm, runt_ptr p)
     spigot_word_define(vm, p, "step16_strig", 12, rproc_strig);
     spigot_word_define(vm, p, "step16_row", 10, rproc_row);
     spigot_word_define(vm, p, "step16_on", 9, rproc_on);
+    spigot_word_define(vm, p, "step16_open", 11, rproc_load);
     return runt_is_alive(vm);
 }
