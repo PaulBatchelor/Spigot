@@ -73,6 +73,7 @@ int sporth_spigot_wrapper(plumber_data *pd, sporth_stack *stack, void **ud)
             if(in != 0) {
                 state->step(state->ud);
             }
+            state->compute(state->ud, in);
 
             break;
 

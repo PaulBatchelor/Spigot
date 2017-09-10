@@ -186,6 +186,26 @@ static runt_int rproc_init(runt_vm *vm, runt_ptr p)
     return RUNT_OK;
 }
 
+static runt_int rproc_compute(runt_vm *vm, runt_ptr p)
+{
+    spigot_state *state;
+    runt_stacklet *s;
+    runt_int rc;
+    runt_float in;
+
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    state = runt_to_cptr(s->p);
+    
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    in = s->f;
+
+    state->compute(state->ud, in);
+
+    return RUNT_OK;
+}
+
 static runt_int rproc_free(runt_vm *vm, runt_ptr p)
 {
     spigot_state *state;
@@ -249,6 +269,7 @@ int spigot_load(plumber_data *pd, runt_vm *vm, int *zoom)
     spigot_word_define(vm, p, "spigot_ugen", 11, rproc_ugen);
     spigot_word_define(vm, p, "spigot_step", 11, rproc_step);
     spigot_word_define(vm, p, "spigot_init", 11, rproc_init);
+    spigot_word_define(vm, p, "spigot_compute", 14, rproc_compute);
     spigot_word_define(vm, p, "spigot_free", 11, rproc_free);
     spigot_tracker_runt(vm, p);
     spigot_pbrain_runt(vm, p);

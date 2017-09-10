@@ -2,6 +2,8 @@
 #include <sporth.h>
 #include <stdlib.h>
 #include <GLFW/glfw3.h>
+#include <string.h>
+#include "plumbstream.h"
 
 #include "spigot.h"
 #include "step16_assets.h"
@@ -37,8 +39,6 @@ static void init(void *ud)
     s = ud;
 
     s->curpos = 0;
-    for(d = 0; d < STEP16_DATASIZE; d++) s->data[d] = 0;
-
     s->seqpos = 0;
     s->init = 1;
     s->play = 1;
@@ -205,6 +205,8 @@ static void keyhandler(spigot_graphics *gfx, void *ud,
 static void step16_init(plumber_data *pd, runt_vm *vm, spigot_state *state)
 {
     spigot_step16 *s;
+    int d;
+
     state->gfx_init = gfx_init;
     state->free = step16_free;
     state->init = init;
@@ -223,6 +225,9 @@ static void step16_init(plumber_data *pd, runt_vm *vm, spigot_state *state)
 
     spigot_color_rgb(&s->bgcolor, 16, 16, 16);
     spigot_color_rgb(&s->fgcolor, 0, 130, 255);
+
+    for(d = 0; d < STEP16_DATASIZE; d++) s->data[d] = 0;
+
 }
 
 static int rproc_step16(runt_vm *vm, runt_ptr p)
@@ -245,6 +250,35 @@ static int rproc_step16(runt_vm *vm, runt_ptr p)
 
     rc = runt_ppush(vm, &s);
     s->p = runt_mk_cptr(vm, state);
+    return RUNT_OK;
+}
+
+static int rproc_strig(runt_vm *vm, runt_ptr p)
+{
+    runt_spigot_data *rsd;
+    spigot_step16 *stp;
+    runt_int rc;
+    runt_stacklet *s;
+    plumber_data *pd;
+    const char *name;
+    sp_ftbl *ft;
+    plumber_stream *stream;
+
+    rsd = runt_to_cptr(p);
+    pd = rsd->pd;
+    stp = rsd->state->ud;
+    
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    stream = runt_to_cptr(s->p);
+
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    name = runt_to_string(s->p);
+
+    sp_ftbl_bind(pd->sp, &ft, stp->slice, 16);
+    plumber_stream_append_data(pd, stream, name, strlen(name), ft, 1, PTYPE_TABLE);
+
     return RUNT_OK;
 }
 
@@ -272,9 +306,53 @@ static int rproc_trig(runt_vm *vm, runt_ptr p)
     return RUNT_OK;
 }
 
+static int rproc_row(runt_vm *vm, runt_ptr p)
+{
+    int row;
+    int rc;
+    runt_spigot_data *rsd;
+    runt_stacklet *s;
+
+    spigot_step16 *stp;
+
+    rsd = runt_to_cptr(p);
+    stp = rsd->state->ud;
+
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    row = s->f;
+
+    stp->curpos = row * 16;
+    return RUNT_OK;
+}
+
+
+static int rproc_on(runt_vm *vm, runt_ptr p)
+{
+    int off;
+    int rc;
+    runt_spigot_data *rsd;
+    runt_stacklet *s;
+
+    spigot_step16 *stp;
+
+    rsd = runt_to_cptr(p);
+    stp = rsd->state->ud;
+
+    rc = runt_ppop(vm, &s);
+    RUNT_ERROR_CHECK(rc);
+    off = s->f;
+
+    stp->data[stp->curpos + off] = 1;
+    return RUNT_OK;
+}
+
 int spigot_step16_runt(runt_vm *vm, runt_ptr p)
 {
     spigot_word_define(vm, p, "step16", 6, rproc_step16);
     spigot_word_define(vm, p, "step16_trig", 11, rproc_trig);
+    spigot_word_define(vm, p, "step16_strig", 12, rproc_strig);
+    spigot_word_define(vm, p, "step16_row", 10, rproc_row);
+    spigot_word_define(vm, p, "step16_on", 9, rproc_on);
     return runt_is_alive(vm);
 }
