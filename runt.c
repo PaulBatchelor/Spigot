@@ -254,6 +254,7 @@ int spigot_load(plumber_data *pd, runt_vm *vm, int *zoom)
     spigot_pbrain_runt(vm, p);
     spigot_db_runt(vm, p);
     spigot_audio_runt(vm, p);
+    spigot_step16_runt(vm, p);
     runt_mark_set(vm);
 
     return runt_is_alive(vm);

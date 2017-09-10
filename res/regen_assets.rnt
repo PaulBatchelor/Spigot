@@ -15,9 +15,12 @@
 "assets.png" img_load _img setptr
 
 128 128 img_setsize
-
 0 0 0 0 128 128 img img_copy
-
 "tracker_assets" "tracker_assets.h" img_writeb
+img img_close
 
+"step16_assets.png" img_load _img setptr
+40 8 img_setsize
+0 0 0 0 40 8 img img_copy
+"step16_assets" "step16_assets.h" img_writeb
 img img_close

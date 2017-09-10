@@ -97,6 +97,8 @@ int sporth_spigot(plumber_data *pd, sporth_stack *stack, void **ud)
                 stuff->state->step(stuff->state->ud);
             }
 
+            stuff->state->compute(stuff->state->ud, in);
+
             break;
 
         case PLUMBER_DESTROY:

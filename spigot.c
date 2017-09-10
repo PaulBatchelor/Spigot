@@ -36,6 +36,7 @@ void spigot_state_init(spigot_state *state)
     state->free = null_fun;
     state->step = null_fun;
     state->init = null_fun;
+    state->compute = null_constant;
     state->key = null_keyfun;
 
     state->constant = null_constant;

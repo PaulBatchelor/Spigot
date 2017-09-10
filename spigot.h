@@ -30,6 +30,7 @@ typedef struct {
     spigot_fun step;
     spigot_fun init;
     spigot_constfun constant;
+    spigot_constfun compute;
 
     spigot_drawfun draw;
     spigot_drawfun gfx_init;
