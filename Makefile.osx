@@ -1,0 +1,4 @@
+CXXFLAGS += -D__MACOSX_CORE__ -fPIC -Irtaudio $(CFLAGS)
+CFLAGS += -DSCALING=2
+LIBS += -framework CoreAudio -framework OpenGL -framework CoreFoundation
+

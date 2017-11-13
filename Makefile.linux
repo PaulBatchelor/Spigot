@@ -1,0 +1,2 @@
+CXXFLAGS += -D__UNIX_JACK__ -fPIC -Irtaudio $(CFLAGS)
+LIBS += -lGL -ljack

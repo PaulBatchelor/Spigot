@@ -1,30 +1,32 @@
+.PHONY: osx linux
 OBJ =pbrain.o runt.o tracker.o db.o audio.o step.o
 
-CFLAGS += -fPIC -g -ansi -Wall 
+CFLAGS += -fPIC -g -Wall 
 CFLAGS += -I$(HOME)/.runt/include
 CFLAGS += -DLIVE_CODING
-LIBS += -lsporth -lsoundpipe -lm -lsndfile -ldl -lglfw -lGL -lrunt -ljack
+LIBS += -lsporth -lsoundpipe -lm -lsndfile -ldl -lglfw -lrunt
 LIBS += -L$(HOME)/.runt/lib
 LIBS += -lrunt_plumber
 LIBS += -lsqlite3
-
-CXXFLAGS += -D__UNIX_JACK__ -fPIC -Irtaudio $(CFLAGS)
 
 CONFIG ?=
 
 include $(CONFIG)
 
-default: spigot libspigot.a
+default: ; @echo "Usage: make [osx|linux]"
+
+all: spigot libspigot.a
+
+osx: ; make -f Makefile -f Makefile.osx all
+
+linux: ; make -f Makefile -f Makefile.linux all
 
 %.o: %.c
-	$(CC) -c $(CFLAGS) $< -o $@
+	$(CC) -ansi -c $(CFLAGS) $< -o $@
 
 %.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
-# spigot.so: spigot.c graphics.c plugin.c $(OBJ) 
-# 	$(CC) $(CFLAGS) -DBUILD_SPORTH_PLUGIN spigot.c graphics.c plugin.c -shared -o $@ $(OBJ) $(LIBS)
-# 
 spigot: $(OBJ) main.o rtaudio/RtAudio.o spigot.o graphics.o plugin.o
 	$(CXX) $(CXXFLAGS) $(OBJ) spigot.o graphics.o main.o rtaudio/RtAudio.o plugin.o -o $@ $(LIBS)
 

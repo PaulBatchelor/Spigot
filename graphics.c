@@ -14,6 +14,10 @@
 
 #define WIDTH 193
 
+#ifndef SCALING
+#define SCALING 1
+#endif
+
 struct spigot_graphics {
     int run;
     pthread_t thread;
@@ -98,7 +102,7 @@ static void draw(spigot_graphics *gfx)
     state->draw(gfx, state->ud);
     glClear(GL_COLOR_BUFFER_BIT);
     glRasterPos2i(0, 0);
-    glPixelZoom(gfx->zoom, -gfx->zoom);
+    glPixelZoom(gfx->zoom * SCALING, -gfx->zoom * SCALING);
     glDrawPixels(193, 193, GL_RGB, GL_UNSIGNED_BYTE, gfx->buf);
 }
 
@@ -198,12 +202,10 @@ void spigot_graphics_loop(spigot_graphics *spgt)
         glfwPollEvents();
         glfwGetWindowSize(spgt->window, &w, &h);
 
-        glViewport(0, 0, (GLsizei) w, (GLsizei) h); 
-        /* glViewport(w, h, (GLsizei) w, (GLsizei) h); */
+        glViewport(0, 0, (GLsizei) w * SCALING, (GLsizei) h * SCALING); 
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        /* glOrtho(0, w, h, 0, -1.0, 1.0); */
-        glOrtho(0, w, h, 0, -1.0, 1.0);
+        glOrtho(0, w * SCALING, h * SCALING, 0, -1.0, 1.0);
         glMatrixMode(GL_MODELVIEW);
 
         if(spgt->please_draw) {
