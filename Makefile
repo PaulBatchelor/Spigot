@@ -8,6 +8,7 @@ LIBS += -lsporth -lsoundpipe -lm -lsndfile -ldl -lglfw -lrunt
 LIBS += -L$(HOME)/.runt/lib
 LIBS += -lrunt_plumber
 LIBS += -lsqlite3
+LIBS += -lpthread
 
 CONFIG ?=
 

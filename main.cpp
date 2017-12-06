@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
     sp->sr = info.preferredSampleRate;
     plumber_register(&pd);
     plumber_init(&pd);
+    plumber_check_stack(&pd, 1);
 
     add_function(&pd, NULL);
     pd.sp = sp;
