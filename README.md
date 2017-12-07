@@ -29,3 +29,7 @@ On OSX, Spigot can be compiled using:
 
     make osx
 
+## Live-Coding Setup
+
+Live coding with Sporth can be done using the Vim plugin
+[Vorth](https://www.github.com/paulbatchelor/vorth.git). 
