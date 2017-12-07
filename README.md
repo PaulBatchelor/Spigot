@@ -29,6 +29,13 @@ On OSX, Spigot can be compiled using:
 
     make osx
 
+
+## Installation
+
+To install, run
+
+    sudo make install
+
 ## Live-Coding Setup
 
 Live coding with Sporth can be done using the Vim plugin
