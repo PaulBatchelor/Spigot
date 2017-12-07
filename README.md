@@ -1,12 +1,31 @@
 # Spigot
 
-Spigot a small collection minimalist graphical interfaces for Sporth, 
-implemented as a Sporth plugin.
-It is powered by glfw3 and [runt](https://www.github.com/paulbatchelor/runt).
+Spigot is a Composition utility for Sporth. 
 
-Typical graphical user interfaces for music are by and large "graphics-first".
-That is to say, the program spawns a GUI *then* starts the audio engine. 
-With Spigot, the audio starts first and then the GUI spawns from Sporth. 
-Spigot is able to be reloaded, allowing it to be used in live coding 
-situations.
+It includes:
+
+- A built-in UDP listener for live coding
+- A minimalist music tracker
+- A minimalist drum sequencer
+- An experimental interface based on brainfuck
+
+## Compilation
+
+First, make sure the following libraries are installed:
+
+- [Soundpipe](https://www.github.com/paulbatchelor/soundpipe.git): make sure 
+to use the "dev" branch
+- [Sporth](https://www.github.com/paulbatchelor/sporth.git): make sure to 
+use the "dev" branch
+- [Runt](https://www.github.com/paulbatchelor/runt.git)
+
+After these libraries are installed, Spigot is ready to be compiled.
+
+On Linux, Spigot can be compiled for JACK using:
+
+    make linux
+
+On OSX, Spigot can be compiled using:
+
+    make osx
 
