@@ -20,8 +20,10 @@ int spigot_db_open(spigot_db *db, const char *filename)
 {
     const char *sampdir;
     char cwd[1024];
-    /* TODO: implement me! */
+    int rc;
+
     sampdir = getenv("SPIGOT_SAMPDIR");
+
     if(sampdir == NULL) {
         fprintf(stderr, "error: SPIGOT_SAMPDIR must be set!\n");
         return 0;
@@ -29,9 +31,13 @@ int spigot_db_open(spigot_db *db, const char *filename)
     getcwd(cwd, 1024);
     chdir(sampdir);
     fprintf(stderr, "cd-ing to %s\n", sampdir);
-    sqlite3_open(filename, &db->db);
+    rc = sqlite3_open(filename, &db->db);
+    if(rc != SQLITE_OK) {
+		fprintf(stderr, "There was an issue opening the file %s\n", filename);
+		return 0;
+    }
     chdir(cwd);
-    return 0;
+    return 1;
 }
 
 int spigot_cdb_open(spigot_db *db, unsigned int id)
@@ -118,7 +124,7 @@ static runt_int rproc_db_open(runt_vm *vm, runt_ptr p)
     RUNT_ERROR_CHECK(rc);
     db = runt_to_cptr(s->p);
 
-    spigot_db_open(db, filename);
+    if(!spigot_db_open(db, filename)) return RUNT_NOT_OK;
 
     rc = runt_ppush(vm, &s);
     RUNT_ERROR_CHECK(rc);
