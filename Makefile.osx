@@ -2,3 +2,10 @@ CXXFLAGS += -D__MACOSX_CORE__ -fPIC -Irtaudio $(CFLAGS)
 CFLAGS += -DSCALING=2
 LIBS += -framework CoreAudio -framework OpenGL -framework CoreFoundation
 
+LIBS += -framework opengl
+LIBS += -framework CoreAudio -framework CoreFoundation
+LIBS += -framework CoreGraphics -framework CoreVideo
+LIBS += -framework AppKit
+LIBS += -framework IOKit
+LIBS += -lstdc++ -lglfw3
+# LDFLAGS += /usr/local/lib/libglfw3.a
